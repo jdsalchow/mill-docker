@@ -37,9 +37,12 @@ trait DockerModule extends Module { outer: JavaModule =>
         .from(regImage)
         .containerize(
           Containerizer.to(
-            RegistryImage
+/*            RegistryImage
               .named("ofenbeck/hello-from-jib")
               .addCredential("ofenbeck", "")
+*/
+            DockerDaemonImage
+              .named("ofenbeck/hello-from-jib")
           )
         );
 
