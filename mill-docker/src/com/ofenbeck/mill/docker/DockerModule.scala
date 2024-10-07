@@ -24,11 +24,27 @@ import scala.collection.immutable._
 import mill._
 import mill.scalalib.ScalaModule
 
+
+ 
 trait DockerModule extends Module { outer: JavaModule =>
 
   trait DockerConfig extends mill.Module {
 
     def baseImage: T[String] = "gcr.io/distroless/java:latest"
+
+    def targetImage: T[String] = T(outer.artifactName())
+
+    def finalConfig: T[DockerSettings] = T{
+      DockerSettings(
+        baseImage = baseImage(),
+        targetImage = targetImage(),
+        )
+    }
+
+    def buildToLocalDockerDemon() = T.task {
+      val conf = finalConfig()
+      JibBuilds.buildToLocalDockerDemon(conf = conf)
+    }
 
     def build() = T.task {
       val baseImage = ImageReference.parse("ghcr.io/graalvm/jdk:latest") // imageFactory()
