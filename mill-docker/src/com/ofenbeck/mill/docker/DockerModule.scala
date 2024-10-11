@@ -23,9 +23,8 @@ import scala.collection.immutable._
 
 import mill._
 import mill.scalalib.ScalaModule
+import mill.api.Ctx
 
-
- 
 trait DockerModule extends Module { outer: JavaModule =>
 
   trait DockerConfig extends mill.Module {
@@ -34,59 +33,68 @@ trait DockerModule extends Module { outer: JavaModule =>
 
     def targetImage: T[String] = T(outer.artifactName())
 
-    def finalConfig: T[DockerSettings] = T{
+    def finalConfig: T[DockerSettings] = T {
       DockerSettings(
         baseImage = baseImage(),
-        targetImage = targetImage(),
-        )
+        targetImage = targetImage()
+      )
     }
 
     def buildToLocalDockerDemon() = T.task {
       val conf = finalConfig()
-      JibBuilds.buildToLocalDockerDemon(conf = conf)
+      JibBuilds.buildToLocalDockerDemon(conf = conf, T.ctx().log)
     }
 
-    def build() = T.task {
-      val baseImage = ImageReference.parse("ghcr.io/graalvm/jdk:latest") // imageFactory()
-      val regImage  = RegistryImage.named(baseImage)
-      val jib = Jib
-        .from(regImage)
-        .containerize(
-          Containerizer.to(
-/*            RegistryImage
-              .named("ofenbeck/hello-from-jib")
-              .addCredential("ofenbeck", "")
-*/
-            DockerDaemonImage
-              .named("ofenbeck/hello-from-jib")
-          )
-        );
-
+    def buildToLocalTarImage() = T.task {
+      val conf = finalConfig()
+      T.ctx().log.info("info test")
+      JibBuilds.buildToLocalTarImage(conf)
     }
 
-    def imageFactory(
-        imageReference: ImageReference,
-        credentialsEnv: (String, String),
-        credHelper: Option[String],
-        credsForHost: String => Option[(String, String)],
-        logger: LogEvent => Unit
-    ): RegistryImage = {
-      val image                      = RegistryImage.named(imageReference)
-      val loggerJava                 = new Consumer[LogEvent] { def accept(e: LogEvent): Unit = logger(e) }
-      val factory                    = CredentialRetrieverFactory.forImage(imageReference, loggerJava)
-      val (usernameEnv, passwordEnv) = credentialsEnv
+    private def isSnapshotDependency(millpath: mill.PathRef) = millpath.path.last.endsWith("-SNAPSHOT.jar")
 
-      // TODO - env credentials
-      image.addCredentialRetriever(factory.dockerConfig())
-      image.addCredentialRetriever(factory.wellKnownCredentialHelpers())
-      image.addCredentialRetriever(factory.googleApplicationDefaultCredentials())
+    def testme() = T.task {
+      val conf = finalConfig()
 
-      credHelper.foreach { helper =>
-        image.addCredentialRetriever(factory.dockerCredentialHelper(helper))
-      }
+      val logger = T.ctx().log
 
-      image
+      val upstreamAssemblyClasspath = outer.upstreamAssemblyClasspath()
+      val internalDependencies: Set[PathRef] = outer.runClasspath().toSet -- outer.resources().toSet
+
+
+
+      val dockerCachedImage                      = DockerDaemonImage.named(ImageReference.parse(conf.baseImage))
+      val javaBuilder                            = JavaContainerBuilder.from(dockerCachedImage)
+      val (upstreamClassSnapShot, upstreamClass) = upstreamAssemblyClasspath.partition(isSnapshotDependency(_))
+      //val localClasspath =
+      javaBuilder.addDependencies(upstreamClass.map(x => x.path.wrapped).toList.asJava)
+      javaBuilder.addSnapshotDependencies(upstreamClassSnapShot.map(_.path.wrapped).toList.asJava)
+
+      outer.resources().map(_.path.wrapped).foreach(path => javaBuilder.addResources(path))// double check this can be called multiple times
+      // javaBuilder.addDependencies()
+      val internal = (internalDependencies.filter(x => x.path.toIO.isFile).map( x => x.path.wrapped).toList)
+      logger.info("internal Dependenicies:") 
+      internal.map(x => logger.info(x.toString()))
+      logger.info("----------------------")
+      javaBuilder.addProjectDependencies(internalDependencies.filter(x => x.path.toIO.isFile).map( x => x.path.wrapped).toList.asJava)
+      
+      
+      val jibBuilder = javaBuilder.toContainerBuilder()
+
+      val container = jibBuilder.containerize(
+        Containerizer
+          .to(DockerDaemonImage.named(conf.targetImage))
+          .addEventHandler(JibLogging.getLogger(logger))
+      )
+
+      /*JibBuilds.buildJavaBuild(
+        conf = conf,
+        outer = outer,
+        //upstreamAssemblyClasspath = outer.upstreamAssemblyClasspath(),
+        //internalDependencies = outer.localClasspath(),
+        logger = T.ctx().log
+      )*/
     }
+
   }
 }
-

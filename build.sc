@@ -19,15 +19,18 @@ object `mill-docker` extends Cross[MillDockerCross](millVersions)
 trait MillDockerCross extends CrossModuleBase with GitVersionedPublishModule with Cross.Module[String] {
   def millVersion = crossValue
 
+  override def publishVersion: T[String] = "0.0.1-SNAPSHOT"
+
   override def crossScalaVersion = "2.13.15"
 
   override def compileIvyDeps = super.compileIvyDeps() ++ Agg(
-    ivy"com.lihaoyi::mill-main:$millVersion",
-    ivy"com.lihaoyi::mill-scalalib:$millVersion"
+   // ivy"com.lihaoyi::mill-scalalib:$millVersion"
   )
 
   override def ivyDeps = super.ivyDeps() ++ Agg(
     ivy"com.google.cloud.tools:jib-core:$jibCore",
+    ivy"com.lihaoyi::mill-main:$millVersion",
+    ivy"com.lihaoyi::mill-scalalib:$millVersion",
   )
   
 

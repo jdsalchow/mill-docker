@@ -1,9 +1,12 @@
-import $file.plugins
 import mill._
 import mill.scalalib._
-import os._
-import coursier.maven.MavenRepository
 
+import coursier.maven.MavenRepository
+import contrib.docker.DockerModule
+import $ivy.`com.lihaoyi::mill-contrib-docker:$MILL_VERSION`
+import scala.io.Source
+
+import $ivy.`com.ofenbeck::mill-docker:fe13e4d`
 
 object project extends ScalaModule with com.ofenbeck.mill.docker.DockerModule {
   def scalaVersion = "2.13.12"
@@ -19,12 +22,13 @@ object project extends ScalaModule with com.ofenbeck.mill.docker.DockerModule {
 
   override def ivyDeps = super.ivyDeps() ++ Agg(
     ivy"com.google.cloud.tools:jib-core:$jibCore",
-    //ivy"com.ofenbeck::mill-docker:0.0.1-SNAPSHOT", //TODO - PR mill - no Snapshot postfix on jar
+    // ivy"com.ofenbeck::mill-docker:0.0.1-SNAPSHOT", //TODO - PR mill - no Snapshot postfix on jar
     ivy"org.scrupal:chill-java:0.7.0-SNAPSHOT"
   )
   object docker extends DockerConfig
 }
 
 def check() = T.command {
-  project.docker.testme()
+  println("blub")
+  project.docker.buildToLocalDockerDemon()
 }
