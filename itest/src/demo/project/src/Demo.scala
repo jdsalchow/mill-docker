@@ -1,5 +1,7 @@
 package com.ofenbeck
 
-class Demo extends App{
+object Demo {
+  @main
+  def main() =
     println("Hello World")
 }

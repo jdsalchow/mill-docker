@@ -59,26 +59,40 @@ trait DockerModule extends Module { outer: JavaModule =>
       val logger = T.ctx().log
 
       val upstreamAssemblyClasspath = outer.upstreamAssemblyClasspath()
-      val internalDependencies: Set[PathRef] = outer.runClasspath().toSet -- outer.resources().toSet
+      // val internalDependencies: Set[PathRef] = outer.localRunClasspath().toSet -- outer.resources().toSet
 
-
+      // val internalDependencies = Agg(outer.compile().classes)
 
       val dockerCachedImage                      = DockerDaemonImage.named(ImageReference.parse(conf.baseImage))
       val javaBuilder                            = JavaContainerBuilder.from(dockerCachedImage)
       val (upstreamClassSnapShot, upstreamClass) = upstreamAssemblyClasspath.partition(isSnapshotDependency(_))
-      //val localClasspath =
+      // val localClasspath =
       javaBuilder.addDependencies(upstreamClass.map(x => x.path.wrapped).toList.asJava)
       javaBuilder.addSnapshotDependencies(upstreamClassSnapShot.map(_.path.wrapped).toList.asJava)
 
-      outer.resources().map(_.path.wrapped).foreach(path => javaBuilder.addResources(path))// double check this can be called multiple times
+      outer
+        .resources()
+        .map(_.path.wrapped)
+        .foreach(path => javaBuilder.addResources(path)) // double check this can be called multiple times
       // javaBuilder.addDependencies()
-      val internal = (internalDependencies.filter(x => x.path.toIO.isFile).map( x => x.path.wrapped).toList)
-      logger.info("internal Dependenicies:") 
-      internal.map(x => logger.info(x.toString()))
+      val internal = outer.compile().classes // internalDependencies
+
+      // (internalDependencies.filter(x => x.path.toIO.isFile).map( x => x.path.wrapped).toList)
+      logger.info("internal Dependenicies:")
+      // internal.map(x => logger.info(x.toString()))
+      logger.info(internal.path.toString())
       logger.info("----------------------")
-      javaBuilder.addProjectDependencies(internalDependencies.filter(x => x.path.toIO.isFile).map( x => x.path.wrapped).toList.asJava)
+      // javaBuilder.addProjectDependencies(internalDependencies.map( x => x.path.wrapped).toList.asJava)
+      javaBuilder.addClasses(internal.path.wrapped)
+
+      val classfiles = os.walk(internal.path).filter(file => file.toIO.isFile()).map(x => x.wrapped).toList.asJava
+      // internal.map( x => x.path.wrapped).asJava)
+      // javaBuilder.setMainClass("com.ofenbeck.Demo")
+      val mainfound = MainClassFinder.find(classfiles, JibLogging.getEventLogger(logger))
+      logger.info(s"Main class found = ${mainfound.getFoundMainClass()}")
       
-      
+
+      javaBuilder.setMainClass(mainfound.getFoundMainClass())
       val jibBuilder = javaBuilder.toContainerBuilder()
 
       val container = jibBuilder.containerize(

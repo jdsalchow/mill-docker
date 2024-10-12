@@ -1,3 +1,6 @@
-object HelloTest extends App{
- println("Hello World") 
+object HelloTest {
+
+  @main
+  def main() =
+    println("Hello World")
 }

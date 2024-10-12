@@ -7,6 +7,16 @@ import com.google.cloud.tools.jib.api._
 
 object JibLogging {
 
+  def getEventLogger(log: mill.api.Logger): java.util.function.Consumer[LogEvent] = {
+    val loggerJava = new java.util.function.Consumer[LogEvent] {
+      def accept(e: LogEvent): Unit =
+        e match {
+          case m: LogEvent => log.info(s"LogEvent:      ${m.getMessage}")
+          case _             => log.info(s"unknown element $e")
+        }
+    }
+    loggerJava
+  }
   def getLogger(log: mill.api.Logger): java.util.function.Consumer[JibEvent] = {
     val loggerJava = new java.util.function.Consumer[JibEvent] {
       def accept(e: JibEvent): Unit =

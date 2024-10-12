@@ -9,7 +9,7 @@ import scala.io.Source
 import $ivy.`com.ofenbeck::mill-docker:fe13e4d`
 
 object project extends ScalaModule with com.ofenbeck.mill.docker.DockerModule {
-  def scalaVersion = "2.13.12"
+  def scalaVersion = "3.3.3"
 
   val sonatypeReleases = Seq(
     MavenRepository("https://oss.sonatype.org/content/repositories/snapshots")
