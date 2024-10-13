@@ -31,15 +31,122 @@ trait DockerModule extends Module { outer: JavaModule =>
 
     def baseImage: T[String] = "gcr.io/distroless/java:latest"
 
+    def pullBaseImage: T[Boolean] = T(baseImage().endsWith(":latest"))
+
     def targetImage: T[String] = T(outer.artifactName())
 
-    def finalConfig: T[DockerSettings] = T {
+    def labels: T[Map[String, String]] = Map.empty[String, String]
+
+    def tags: T[Seq[String]] = T(List(outer.artifactName()))
+
+    /** JVM runtime options. Each item of the Seq should consist of an option and its desired value, like
+      * {{{
+      * def jvmOptions = Seq("-Xmx1024M", "-agentlib:jdwp=transport=dt_socket,server=y,address=8000", …)
+      * }}}
+      * For a full list of options consult the official documentation at
+      * [[https://docs.oracle.com/en/java/javase/21/docs/specs/man/java.html#overview-of-java-options]]
+      */
+    def jvmOptions: T[Seq[String]] = Seq.empty[String]
+
+    /** TCP Ports the container will listen to at runtime.
+      *
+      * See also the Docker docs on [[https://docs.docker.com/engine/reference/builder/#expose ports]] for more
+      * information.
+      */
+    def exposedPorts: T[Seq[Int]] = Seq.empty[Int]
+
+    /** UDP Ports the container will listen to at runtime.
+      *
+      * See also the Docker docs on [[https://docs.docker.com/engine/reference/builder/#expose ports]] for more
+      * information.
+      */
+    def exposedUdpPorts: T[Seq[Int]] = Seq.empty[Int]
+
+    /** The names of mount points.
+      *
+      * See also the Docker docs on [[https://docs.docker.com/engine/reference/builder/#volume volumes]] for more
+      * information.
+      */
+    def volumes: T[Seq[String]] = Seq.empty[String]
+
+    /** Environment variables to be set in the container.
+      *
+      * See also the Docker docs on [[https://docs.docker.com/engine/reference/builder/#env ENV]] for more information.
+      */
+    def envVars: T[Map[String, String]] = Map.empty[String, String]
+
+    /** Commands to add as RUN instructions.
+      *
+      * See also the Docker docs on [[https://docs.docker.com/engine/reference/builder/#run RUN]] for more information.
+      */
+    def run: T[Seq[String]] = Seq.empty[String]
+
+    /** Any applicable string to the USER instruction.
+      *
+      * An empty string will be ignored and will result in USER not being specified. See also the Docker docs on
+      * [[https://docs.docker.com/engine/reference/builder/#user USER]] for more information.
+      */
+    def user: T[Option[String]] = None
+
+    def platforms: T[Set[com.ofenbeck.mill.docker.Platform]] = Set.empty[com.ofenbeck.mill.docker.Platform]
+
+    def internalImageFormat: T[com.ofenbeck.mill.docker.JibImageFormat] = T {
+      val x: JibImageFormat = com.ofenbeck.mill.docker.JibImageFormat.Docker
+      x
+    }
+
+    def entrypoint: T[Seq[String]] = Seq.empty[String]
+
+    def args: T[Seq[String]] = Seq.empty[String]
+
+
+    def baseImageCredentialEnv: T[(String, String)] = ("", "")
+    def targetImageCredentialEnv: T[(String, String)] = ("", "")
+
+    def dockerContainerConfig: T[DockerSettings] = T {
       DockerSettings(
         baseImage = baseImage(),
-        targetImage = targetImage()
+        targetImage = targetImage(),
+        tags = tags(),
+        labels = labels(),
+        jvmOptions = jvmOptions(),
+        exposedPorts = exposedPorts(),
+        exposedUdpPorts = exposedUdpPorts(),
+        envVars = envVars(),
+        user = user(),
+        platforms = platforms(),
+        internalImageFormat = internalImageFormat(),
+        entrypoint = entrypoint(),
+        args = args(),
       )
     }
 
+    def buildSettings: T[BuildSettings] = T {
+      BuildSettings(
+        baseImageCredentialEnv = baseImageCredentialEnv(),
+        targetImageCredentialEnv = targetImageCredentialEnv(),
+        setAllowInsecureRegistries = false,
+        useCurrentTimestamp = true,
+        upstreamAssemblyClasspath = outer.upstreamAssemblyClasspath().toList,
+        resourcesPaths = outer.resources(),
+        compiledClasses = outer.compile().classes,
+        mainClass = None,
+        autoDetectMainClass = true,
+        pullBaseImage = pullBaseImage(),
+      )
+    }
+
+    def runit() = T.command {
+      val logger = T.ctx().log
+
+      JibJavaBuild.javaBuild(
+        buildSettings = buildSettings(),
+        dockerSettings = dockerContainerConfig(),
+        logger = logger
+      )
+    }
+
+    /*
     def buildToLocalDockerDemon() = T.task {
       val conf = finalConfig()
       JibBuilds.buildToLocalDockerDemon(conf = conf, T.ctx().log)
@@ -50,11 +157,11 @@ trait DockerModule extends Module { outer: JavaModule =>
       T.ctx().log.info("info test")
       JibBuilds.buildToLocalTarImage(conf)
     }
-
+     */
     private def isSnapshotDependency(millpath: mill.PathRef) = millpath.path.last.endsWith("-SNAPSHOT.jar")
 
     def testme() = T.task {
-      val conf = finalConfig()
+      val conf = dockerContainerConfig()
 
       val logger = T.ctx().log
 
@@ -90,7 +197,6 @@ trait DockerModule extends Module { outer: JavaModule =>
       // javaBuilder.setMainClass("com.ofenbeck.Demo")
       val mainfound = MainClassFinder.find(classfiles, JibLogging.getEventLogger(logger))
       logger.info(s"Main class found = ${mainfound.getFoundMainClass()}")
-      
 
       javaBuilder.setMainClass(mainfound.getFoundMainClass())
       val jibBuilder = javaBuilder.toContainerBuilder()
@@ -98,7 +204,7 @@ trait DockerModule extends Module { outer: JavaModule =>
       val container = jibBuilder.containerize(
         Containerizer
           .to(DockerDaemonImage.named(conf.targetImage))
-          .addEventHandler(JibLogging.getLogger(logger))
+          .addEventHandler(JibLogging.getLogger(logger)),
       )
 
       /*JibBuilds.buildJavaBuild(

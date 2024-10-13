@@ -22,9 +22,15 @@ object project extends ScalaModule with com.ofenbeck.mill.docker.DockerModule {
     //ivy"com.ofenbeck::mill-docker:0.0.1-SNAPSHOT", //TODO - PR mill - no Snapshot postfix on jar
     ivy"org.scrupal:chill-java:0.7.0-SNAPSHOT"
   )
-  object docker extends DockerConfig
+  object docker extends DockerConfig {
+    override def baseImage = "gcr.io/distroless/java:latest"
+    override def targetImage = "ofenbeck/demo"
+    override def labels = Map("maintainer" -> "ofenbeck")
+    override def jvmOptions = Seq("-Xmx1024M")
+    override def exposedPorts = Seq(8080)
+
+  }
 }
 
 def check() = T.command {
-  project.docker.testme()
-}
+  project.docker.buildSettings()
