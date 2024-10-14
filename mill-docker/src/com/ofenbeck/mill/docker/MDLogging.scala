@@ -5,7 +5,7 @@ import com.google.cloud.tools.jib.event.events.TimerEvent
 
 import com.google.cloud.tools.jib.api._
 
-object JibLogging {
+object MDLogging {
 
   def getEventLogger(log: mill.api.Logger): java.util.function.Consumer[LogEvent] = {
     val loggerJava = new java.util.function.Consumer[LogEvent] {

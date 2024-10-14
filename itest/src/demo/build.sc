@@ -23,14 +23,17 @@ object project extends ScalaModule with com.ofenbeck.mill.docker.DockerModule {
     ivy"org.scrupal:chill-java:0.7.0-SNAPSHOT"
   )
   object docker extends DockerConfig {
-    override def baseImage = "gcr.io/distroless/java:latest"
-    override def targetImage = "ofenbeck/demo"
     override def labels = Map("maintainer" -> "ofenbeck")
     override def jvmOptions = Seq("-Xmx1024M")
     override def exposedPorts = Seq(8080)
+
+    def sourceImage = com.ofenbeck.mill.docker.JibImage.DockerDaemonImage("gcr.io/distroless/java:latest")
+    def targetImage = com.ofenbeck.mill.docker.JibImage.DockerDaemonImage("ofenbeck/demo3")
+    
 
   }
 }
 
 def check() = T.command {
-  project.docker.buildSettings()
+  project.docker.jibJavaBuild()
+}

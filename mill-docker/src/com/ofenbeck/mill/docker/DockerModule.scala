@@ -25,15 +25,11 @@ import mill._
 import mill.scalalib.ScalaModule
 import mill.api.Ctx
 
+import com.ofenbeck.mill.{docker => md}
+
 trait DockerModule extends Module { outer: JavaModule =>
 
   trait DockerConfig extends mill.Module {
-
-    def baseImage: T[String] = "gcr.io/distroless/java:latest"
-
-    def pullBaseImage: T[Boolean] = T(baseImage().endsWith(":latest"))
-
-    def targetImage: T[String] = T(outer.artifactName())
 
     def labels: T[Map[String, String]] = Map.empty[String, String]
 
@@ -88,26 +84,24 @@ trait DockerModule extends Module { outer: JavaModule =>
       */
     def user: T[Option[String]] = None
 
-    def platforms: T[Set[com.ofenbeck.mill.docker.Platform]] = Set.empty[com.ofenbeck.mill.docker.Platform]
+    def platforms: T[Set[md.Platform]] = Set.empty[md.Platform]
 
-    def internalImageFormat: T[com.ofenbeck.mill.docker.JibImageFormat] = T {
-      val x: JibImageFormat = com.ofenbeck.mill.docker.JibImageFormat.Docker
+    def internalImageFormat: T[md.JibImageFormat] = T {
+      val x: JibImageFormat = md.JibImageFormat.Docker
       x
     }
+
 
     def entrypoint: T[Seq[String]] = Seq.empty[String]
 
     def args: T[Seq[String]] = Seq.empty[String]
 
+    def sourceImage: T[md.JibSourceImage]  
 
-    def baseImageCredentialEnv: T[(String, String)] = ("", "")
-    def targetImageCredentialEnv: T[(String, String)] = ("", "")
+    def targetImage: T[md.ImageReference] 
 
     def dockerContainerConfig: T[DockerSettings] = T {
       DockerSettings(
-        baseImage = baseImage(),
-        targetImage = targetImage(),
-        tags = tags(),
         labels = labels(),
         jvmOptions = jvmOptions(),
         exposedPorts = exposedPorts(),
@@ -123,8 +117,8 @@ trait DockerModule extends Module { outer: JavaModule =>
 
     def buildSettings: T[BuildSettings] = T {
       BuildSettings(
-        baseImageCredentialEnv = baseImageCredentialEnv(),
-        targetImageCredentialEnv = targetImageCredentialEnv(),
+        sourceImage = sourceImage(),
+        targetImage = targetImage(),
         setAllowInsecureRegistries = false,
         useCurrentTimestamp = true,
         upstreamAssemblyClasspath = outer.upstreamAssemblyClasspath().toList,
@@ -132,20 +126,72 @@ trait DockerModule extends Module { outer: JavaModule =>
         compiledClasses = outer.compile().classes,
         mainClass = None,
         autoDetectMainClass = true,
-        pullBaseImage = pullBaseImage(),
+        tags = tags(),
       )
     }
 
+
+    def jibJavaBuild() = T.command{
+
+      val logger     = T.ctx().log
+      val dockerConf = dockerContainerConfig()
+      val buildConf  = buildSettings()
+
+      val jibContainerBuilder = MDJavaBuild.javaBuild(
+        buildSettings = buildConf,
+        dockerSettings = dockerConf,
+        logger = logger,
+      )
+      
+
+
+      val containerizer = buildConf.targetImage match {
+        case md.JibImage.DockerDaemonImage(qualifiedName, _, _) =>
+          Containerizer.to(DockerDaemonImage.named(qualifiedName))
+        case md.JibImage.RegistryImage(qualifiedName, credentialsEnvironment) =>
+         Containerizer.to(RegistryImage.named(qualifiedName))
+        case md.JibImage.TargetTarFile(qualifiedName, filename) =>
+          Containerizer.to(TarImage.at((T.dest / filename).wrapped).named(qualifiedName))
+      }
+     
+      val containerizerWithLogs = containerizer.addEventHandler(MDLogging.getLogger(logger))
+
+      val containerizerWithTags = buildConf.tags.foldRight(containerizerWithLogs) { (tag, c) =>
+        c.withAdditionalTag(tag)
+      }
+      val containerizerWithToolSet = containerizerWithTags
+        .setAllowInsecureRegistries(buildConf.setAllowInsecureRegistries)
+        .setToolName(MDShared.toolName)
+      // TODO: check how we could combine jib and mill caching
+      val container = jibContainerBuilder.containerize(containerizerWithToolSet)
+    }
+
+/*
     def runit() = T.command {
-      val logger = T.ctx().log
+      val logger     = T.ctx().log
+      val dockerConf = dockerContainerConfig()
+      val buildConf  = buildSettings()
 
-      JibJavaBuild.javaBuild(
-        buildSettings = buildSettings(),
-        dockerSettings = dockerContainerConfig(),
-        logger = logger
+      val jibContainerBuilder = JibJavaBuild.javaBuild(
+        buildSettings = buildConf,
+        dockerSettings = dockerConf,
+        logger = logger,
       )
-    }
+      val containerizer =
+        Containerizer
+          .to(DockerDaemonImage.named(dockerConf.targetImage))
+          .addEventHandler(JibLogging.getLogger(logger))
 
+      val containerizerWithTags = buildConf.tags.foldRight(containerizer) { (tag, c) =>
+        c.withAdditionalTag(tag)
+      }
+      val containerizerWithToolSet = containerizerWithTags
+        .setAllowInsecureRegistries(buildConf.setAllowInsecureRegistries)
+        .setToolName(JibShared.toolName)
+      // TODO: check how we could combine jib and mill caching
+      val container = jibContainerBuilder.containerize(containerizer)
+    }
+*/
     /*
     def buildToLocalDockerDemon() = T.task {
       val conf = finalConfig()
@@ -159,7 +205,7 @@ trait DockerModule extends Module { outer: JavaModule =>
     }
      */
     private def isSnapshotDependency(millpath: mill.PathRef) = millpath.path.last.endsWith("-SNAPSHOT.jar")
-
+/*
     def testme() = T.task {
       val conf = dockerContainerConfig()
 
@@ -215,6 +261,6 @@ trait DockerModule extends Module { outer: JavaModule =>
         logger = T.ctx().log
       )*/
     }
-
+*/
   }
 }

@@ -7,8 +7,8 @@ import com.google.cloud.tools.jib.frontend.CredentialRetrieverFactory
 import com.google.cloud.tools.jib.global.JibSystemProperties
 import scala.jdk.CollectionConverters._
 
-object JibBuilds {
-
+object MDBuilds {
+/*
   def buildToLocalDockerDemon(conf: DockerSettings, logger: mill.api.Logger) = {
     val baseImage         = RegistryImage.named(ImageReference.parse(conf.baseImage))
     val targetImage       = RegistryImage.named(ImageReference.parse(conf.targetImage))
@@ -19,7 +19,7 @@ object JibBuilds {
       .containerize(
         Containerizer
           .to(DockerDaemonImage.named(conf.targetImage))
-          .addEventHandler(JibLogging.getLogger(logger))
+          .addEventHandler(MDLogging.getLogger(logger))
       )
   }
 
@@ -59,9 +59,10 @@ object JibBuilds {
 
         Containerizer
           .to(DockerDaemonImage.named(conf.targetImage))
-          .addEventHandler(JibLogging.getLogger(logger))
+          .addEventHandler(MDLogging.getLogger(logger))
     )
 
     "blub"
   }
+    */
 }
