@@ -2,9 +2,14 @@ package com.ofenbeck.mill.docker
 
 import com.google.cloud.tools.jib.api.ImageReference
 import com.ofenbeck.mill.{docker => md}
+import java.time.Instant
 
 object MDShared {
   val toolName = "mill-docker-jib"
+  def useCurrentTimestamp(useCurrentTimestamp: Boolean): Instant =
+    if (useCurrentTimestamp) Instant.now() else Instant.EPOCH
+
+  def isSnapshotDependency(millpath: mill.PathRef) = millpath.path.last.endsWith("-SNAPSHOT.jar")
 }
 
 final case class Platform(
@@ -15,8 +20,8 @@ object Platform {
   implicit val rw: upickle.default.ReadWriter[Platform] = upickle.default.macroRW
 }
 
-final case class BuildSettings( 
-    val sourceImage: md.JibSourceImage , 
+final case class BuildSettings(
+    val sourceImage: md.JibSourceImage,
     val targetImage: md.ImageReference,
     val upstreamAssemblyClasspath: Seq[mill.PathRef],
     val resourcesPaths: Seq[mill.PathRef],
@@ -29,9 +34,9 @@ final case class BuildSettings(
 )
 
 object BuildSettings {
-  implicit val rwimage: upickle.default.ReadWriter[md.ImageReference]      = upickle.default.macroRW  
-    implicit val source: upickle.default.ReadWriter[md.JibSourceImage]          = upickle.default.macroRW
-  implicit val rw: upickle.default.ReadWriter[BuildSettings] = upickle.default.macroRW
+  implicit val rwimage: upickle.default.ReadWriter[md.ImageReference] = upickle.default.macroRW
+  implicit val source: upickle.default.ReadWriter[md.JibSourceImage]  = upickle.default.macroRW
+  implicit val rw: upickle.default.ReadWriter[BuildSettings]          = upickle.default.macroRW
 }
 
 final case class DockerSettings(

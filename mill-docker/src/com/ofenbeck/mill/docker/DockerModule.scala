@@ -71,12 +71,6 @@ trait DockerModule extends Module { outer: JavaModule =>
       */
     def envVars: T[Map[String, String]] = Map.empty[String, String]
 
-    /** Commands to add as RUN instructions.
-      *
-      * See also the Docker docs on [[https://docs.docker.com/engine/reference/builder/#run RUN]] for more information.
-      */
-    def run: T[Seq[String]] = Seq.empty[String]
-
     /** Any applicable string to the USER instruction.
       *
       * An empty string will be ignored and will result in USER not being specified. See also the Docker docs on
@@ -87,18 +81,26 @@ trait DockerModule extends Module { outer: JavaModule =>
     def platforms: T[Set[md.Platform]] = Set.empty[md.Platform]
 
     def internalImageFormat: T[md.JibImageFormat] = T {
-      val x: JibImageFormat = md.JibImageFormat.Docker
-      x
+      md.JibImageFormat.Docker: JibImageFormat
     }
-
 
     def entrypoint: T[Seq[String]] = Seq.empty[String]
 
     def args: T[Seq[String]] = Seq.empty[String]
 
-    def sourceImage: T[md.JibSourceImage]  
+    def sourceImage: T[md.JibSourceImage]
 
-    def targetImage: T[md.ImageReference] 
+    def targetImage: T[md.ImageReference]
+
+    def defaultLayerOrder: T[Seq[DefaultLayers]] = T {
+      Seq(
+        DefaultLayers.Dependencies,
+        DefaultLayers.SnapshotDependencies,
+        DefaultLayers.Resources,
+        DefaultLayers.Classes,
+        DefaultLayers.ExtraFiles,
+      ): Seq[DefaultLayers]
+    }
 
     def dockerContainerConfig: T[DockerSettings] = T {
       DockerSettings(
@@ -130,30 +132,33 @@ trait DockerModule extends Module { outer: JavaModule =>
       )
     }
 
+    def jibContainerBuilderHook
+        : T[Option[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder]] = None
+    
+    def javaContainerBuilderHook: T[Option[JavaContainerBuilder => JavaContainerBuilder]] = None
 
-    def jibJavaBuild() = T.command{
+    def buildImage() = T.command {
 
       val logger     = T.ctx().log
       val dockerConf = dockerContainerConfig()
       val buildConf  = buildSettings()
 
-      val jibContainerBuilder = MDJavaBuild.javaBuild(
+      val jibContainerBuilder = MDBuild.javaBuild(
         buildSettings = buildConf,
         dockerSettings = dockerConf,
         logger = logger,
+        javaContainerBuilderHook = javaContainerBuilderHook(),
+        jibContainerBuilderHook = jibContainerBuilderHook(),
       )
-      
-
-
       val containerizer = buildConf.targetImage match {
         case md.JibImage.DockerDaemonImage(qualifiedName, _, _) =>
           Containerizer.to(DockerDaemonImage.named(qualifiedName))
         case md.JibImage.RegistryImage(qualifiedName, credentialsEnvironment) =>
-         Containerizer.to(RegistryImage.named(qualifiedName))
+          Containerizer.to(RegistryImage.named(qualifiedName))
         case md.JibImage.TargetTarFile(qualifiedName, filename) =>
           Containerizer.to(TarImage.at((T.dest / filename).wrapped).named(qualifiedName))
       }
-     
+
       val containerizerWithLogs = containerizer.addEventHandler(MDLogging.getLogger(logger))
 
       val containerizerWithTags = buildConf.tags.foldRight(containerizerWithLogs) { (tag, c) =>
@@ -166,7 +171,7 @@ trait DockerModule extends Module { outer: JavaModule =>
       val container = jibContainerBuilder.containerize(containerizerWithToolSet)
     }
 
-/*
+    /*
     def runit() = T.command {
       val logger     = T.ctx().log
       val dockerConf = dockerContainerConfig()
@@ -191,7 +196,7 @@ trait DockerModule extends Module { outer: JavaModule =>
       // TODO: check how we could combine jib and mill caching
       val container = jibContainerBuilder.containerize(containerizer)
     }
-*/
+     */
     /*
     def buildToLocalDockerDemon() = T.task {
       val conf = finalConfig()
@@ -204,8 +209,7 @@ trait DockerModule extends Module { outer: JavaModule =>
       JibBuilds.buildToLocalTarImage(conf)
     }
      */
-    private def isSnapshotDependency(millpath: mill.PathRef) = millpath.path.last.endsWith("-SNAPSHOT.jar")
-/*
+    /*
     def testme() = T.task {
       val conf = dockerContainerConfig()
 
@@ -261,6 +265,6 @@ trait DockerModule extends Module { outer: JavaModule =>
         logger = T.ctx().log
       )*/
     }
-*/
+     */
   }
 }

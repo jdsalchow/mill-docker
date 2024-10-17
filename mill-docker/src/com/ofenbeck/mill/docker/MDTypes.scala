@@ -11,7 +11,31 @@ import scala.jdk.CollectionConverters._
 import scala.jdk.OptionConverters.RichOption
 import mill.api.PathRef
 
-
+sealed trait DefaultLayers
+object DefaultLayers{
+  case object Dependencies extends DefaultLayers
+  case object SnapshotDependencies extends DefaultLayers
+  case object Resources extends DefaultLayers
+  case object Classes extends DefaultLayers
+  case object ExtraFiles extends DefaultLayers
+  
+  implicit val rw: upickle.default.ReadWriter[DefaultLayers] = upickle.default.readwriter[String].bimap(
+    {
+      case Dependencies => "Dependencies"
+      case SnapshotDependencies => "SnapshotDependencies"
+      case Resources => "Resources"
+      case Classes => "Classes"
+      case ExtraFiles => "ExtraFiles"
+    },
+    {
+      case "Dependencies" => Dependencies
+      case "SnapshotDependencies" => SnapshotDependencies
+      case "Resources" => Resources
+      case "Classes" => Classes
+      case "ExtraFiles" => ExtraFiles
+    },
+  )
+}
 
 
 sealed trait JibImageFormat

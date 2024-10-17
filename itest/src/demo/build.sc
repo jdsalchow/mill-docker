@@ -28,12 +28,12 @@ object project extends ScalaModule with com.ofenbeck.mill.docker.DockerModule {
     override def exposedPorts = Seq(8080)
 
     def sourceImage = com.ofenbeck.mill.docker.JibImage.DockerDaemonImage("gcr.io/distroless/java:latest")
-    def targetImage = com.ofenbeck.mill.docker.JibImage.DockerDaemonImage("ofenbeck/demo3")
+    def targetImage = com.ofenbeck.mill.docker.JibImage.DockerDaemonImage("ofenbeck/demo6")
     
 
   }
 }
 
 def check() = T.command {
-  project.docker.jibJavaBuild()
+  project.docker.buildImage()
 }
