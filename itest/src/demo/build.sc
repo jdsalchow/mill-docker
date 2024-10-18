@@ -4,8 +4,9 @@ import mill.scalalib._
 import os._
 import coursier.maven.MavenRepository
 
+import com.ofenbeck.mill.docker._
 
-object project extends ScalaModule with com.ofenbeck.mill.docker.DockerModule {
+object project extends ScalaModule with DockerJibModule {
   def scalaVersion = "3.3.3"
 
   val sonatypeReleases = Seq(
@@ -27,8 +28,8 @@ object project extends ScalaModule with com.ofenbeck.mill.docker.DockerModule {
     override def jvmOptions = Seq("-Xmx1024M")
     override def exposedPorts = Seq(8080)
 
-    def sourceImage = com.ofenbeck.mill.docker.JibImage.DockerDaemonImage("gcr.io/distroless/java:latest")
-    def targetImage = com.ofenbeck.mill.docker.JibImage.DockerDaemonImage("ofenbeck/demo6")
+    def sourceImage = JibImage.DockerDaemonImage("gcr.io/distroless/java:latest")
+    def targetImage = JibImage.DockerDaemonImage("ofenbeck/demo6")
     
 
   }

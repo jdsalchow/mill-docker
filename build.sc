@@ -11,7 +11,7 @@ import mill.scalalib.publish._
 import mill.scalalib.api.ZincWorkerUtil._
 import mill.scalalib.publish.{Developer, License, PomSettings, VersionControl}
 
-val millVersions = Seq("0.11.12","0.11.10")
+val millVersions = Seq("0.11.12","0.12.0-RC3")
 val jibCore      = "0.27.1"
 //def millBinaryVersion(millVersion: String) = scalaNativeBinaryVersion(millVersion)
 
@@ -19,7 +19,7 @@ object `mill-docker` extends Cross[MillDockerCross](millVersions)
 trait MillDockerCross extends CrossModuleBase with GitVersionedPublishModule with Cross.Module[String] {
   def millVersion = crossValue
 
-  override def publishVersion: T[String] = "0.0.1-SNAPSHOT"
+  override def publishVersion: T[String] = "0.0.2-SNAPSHOT"
 
   override def crossScalaVersion = "2.13.15"
 

@@ -2,11 +2,12 @@ package com.ofenbeck.mill.docker
 
 import com.google.cloud.tools.jib.event.events.ProgressEvent
 import com.google.cloud.tools.jib.event.events.TimerEvent
+import com.google.cloud.tools.jib.api.LogEvent
+import com.google.cloud.tools.jib.api.JibEvent
 
-import com.google.cloud.tools.jib.api._
 
 object MDLogging {
-
+//
   def getEventLogger(log: mill.api.Logger): java.util.function.Consumer[LogEvent] = {
     val loggerJava = new java.util.function.Consumer[LogEvent] {
       def accept(e: LogEvent): Unit =

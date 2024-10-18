@@ -1,0 +1,4 @@
+integration test: download release
+
+cross: publish local 13RC
+

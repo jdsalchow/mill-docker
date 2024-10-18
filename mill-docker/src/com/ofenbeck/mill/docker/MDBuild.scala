@@ -1,19 +1,26 @@
 package com.ofenbeck.mill.docker
 
-import com.google.cloud.tools.jib.api.buildplan._
-import com.google.cloud.tools.jib.api.{Containerizer, JavaContainerBuilder}
+import com.google.cloud.tools.jib.api.Containerizer
 import com.google.cloud.tools.jib.api.ImageReference
-import com.google.cloud.tools.jib.api.LogEvent
+import com.google.cloud.tools.jib.api.JavaContainerBuilder
 import com.google.cloud.tools.jib.api.Jib
-import com.google.cloud.tools.jib.api._
-import mill.scalalib.JavaModule
-
-import scala.jdk.CollectionConverters._
-import com.google.cloud.tools.jib.api._
-import java.time.Instant
 import com.google.cloud.tools.jib.api.JibContainerBuilder
-import os.group.set
+import com.google.cloud.tools.jib.api.LogEvent
 import coursier.core.shaded.sourcecode.File
+import mill.scalalib.JavaModule
+import os.group.set
+
+import java.time.Instant
+import scala.jdk.CollectionConverters._
+import com.google.cloud.tools.jib.api.buildplan.FileEntriesLayer
+import com.google.cloud.tools.jib.api.RegistryImage
+import com.google.cloud.tools.jib.api.DockerDaemonImage
+import com.google.cloud.tools.jib.api.TarImage
+import com.google.cloud.tools.jib.api.buildplan.ImageFormat
+import com.google.cloud.tools.jib.api.buildplan.Port
+import com.google.cloud.tools.jib.api.MainClassFinder
+import com.google.cloud.tools.jib.api.buildplan.LayerObject
+import com.google.cloud.tools.jib.api.buildplan.FileEntry
 
 object MDBuild {
 
@@ -40,20 +47,20 @@ object MDBuild {
     val (upstreamClassSnapShot, upstreamClass) =
       buildSettings.upstreamAssemblyClasspath.partition(MDShared.isSnapshotDependency(_))
 
-    buildSettings.layerOrder.foreach {
-      case DefaultLayers.Dependencies =>
-        javaBuilder.addDependencies(upstreamClass.map(x => x.path.wrapped).toList.asJava)
-      case DefaultLayers.SnapshotDependencies =>
-        javaBuilder.addSnapshotDependencies(upstreamClassSnapShot.map(_.path.wrapped).toList.asJava)
-      case DefaultLayers.Resources =>
-        buildSettings.resourcesPaths
-          .map(_.path.wrapped)
-          .foreach(path => javaBuilder.addResources(path)) // TODO: double check this can be called multiple times
-      case DefaultLayers.Classes =>
-        javaBuilder.addClasses(buildSettings.compiledClasses.path.wrapped)
-      case DefaultLayers.ExtraFiles => // TODO: ExtraFiles
+    javaBuilder.addDependencies(upstreamClass.map(x => x.path.wrapped).toList.asJava)
+    javaBuilder.addSnapshotDependencies(upstreamClassSnapShot.map(_.path.wrapped).toList.asJava)
+    buildSettings.resourcesPaths
+      .filter(p => os.exists(p.path))
+      .map(_.path.wrapped)
+      .foreach(path => javaBuilder.addResources(path)) // TODO: double check this can be called multiple times
+
+    if (os.exists(buildSettings.compiledClasses.path)) {
+      javaBuilder.addClasses(buildSettings.compiledClasses.path.wrapped)
+      setMainClass(buildSettings, javaBuilder, logger)
+    } else {
+      logger.error("No compiled classes found - skipping adding classes and setting main class")
     }
-    setMainClass(buildSettings, javaBuilder, logger)
+
     javaBuilder.addJvmFlags(dockerSettings.jvmOptions.asJava)
 
     val javaBuilderPostHook = javaContainerBuilderHook.map(hook => hook(javaBuilder)).getOrElse(javaBuilder)
@@ -62,7 +69,7 @@ object MDBuild {
     val jibContainerBuilderPostHook = jibContainerBuilderHook
       .map(hook => customizeLayers(containerBuilder, buildSettings, logger, hook))
       .getOrElse(containerBuilder)
-    
+
     setContainerParams(dockerSettings, buildSettings, logger, jibContainerBuilderPostHook)
   }
 
@@ -150,7 +157,8 @@ object MDBuild {
       case JibImageFormat.Docker => ImageFormat.Docker
       case JibImageFormat.OCI    => ImageFormat.OCI
     })
-    import com.google.cloud.tools.jib.api.buildplan.Port._
+    import com.google.cloud.tools.jib.api.buildplan.Port.tcp
+    import com.google.cloud.tools.jib.api.buildplan.Port.udp
     val ports: Set[Port] =
       dockerSettings.exposedPorts.map(p => tcp(p)).toSet ++ dockerSettings.exposedUdpPorts.map(p => udp(p)).toSet
     containerBuilder.setExposedPorts(ports.asJava)
@@ -159,40 +167,3 @@ object MDBuild {
     containerBuilder
   }
 }
-/*
-  def buildLayeredContainer(
-      dockerSettings: DockerSettings,
-      buildSettings: BuildSettings,
-      logger: mill.api.Logger,
-  ): JibContainerBuilder = {
-
-    val jibBuilder = buildSettings.sourceImage match {
-      case JibImage.RegistryImage(qualifiedName, credentialsEnvironment) =>
-        Jib.from(RegistryImage.named(ImageReference.parse(qualifiedName)))
-      case JibImage.DockerDaemonImage(qualifiedName, useFallBack, fallBackEnvCredentials) =>
-        Jib.from(DockerDaemonImage.named(ImageReference.parse(qualifiedName)))
-      case JibImage.SourceTarFile(path) =>
-        Jib.from(TarImage.at(path.path.wrapped))
-    }
-    // TODO: Layers
-    val layers = MDLayers.createDefaultLayers(buildSettings)
-
-    val jibLayers = layers.map { mdlayer =>
-      val layerBuilder = FileEntriesLayer.builder()
-      mdlayer.entries.foreach { entry =>
-        logger.info(s"Adding entry ${entry.sourceFile.path} to layer ${entry.pathInContainer}")
-        layerBuilder.addEntry(
-          entry.sourceFile.path.wrapped,
-          AbsoluteUnixPath.get((entry.pathInContainer.wrapped + "/" + entry.sourceFile.path).toString()),
-          entry.permissions,
-          entry.modificationTime,
-          entry.ownership,
-        )
-      }
-      layerBuilder.build()
-    }
-    jibBuilder.setFileEntriesLayers(jibLayers.asJava)
-    setContainerParams(dockerSettings, buildSettings, logger, jibBuilder)
-
-  }
- */
