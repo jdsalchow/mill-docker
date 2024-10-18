@@ -48,7 +48,7 @@ object JibImage {
       with JibSourceImage
   case class RegistryImage(
       qualifiedName: String,
-      credentialsEnvironment: (String, String),
+      credentialsEnvironment: Option[(String, String)] = None,
   ) extends ImageReference
       with JibSourceImage
 

@@ -26,6 +26,7 @@ final case class BuildSettings(
     val upstreamAssemblyClasspath: Seq[mill.PathRef],
     val resourcesPaths: Seq[mill.PathRef],
     val compiledClasses: mill.PathRef,
+    val unmanagedDependencies: Seq[mill.PathRef],
     val mainClass: Option[String],
     val tags: Seq[String],
     val setAllowInsecureRegistries: Boolean = false,

@@ -49,6 +49,17 @@ object MDBuild {
 
     javaBuilder.addDependencies(upstreamClass.map(x => x.path.wrapped).toList.asJava)
     javaBuilder.addSnapshotDependencies(upstreamClassSnapShot.map(_.path.wrapped).toList.asJava)
+
+    buildSettings.unmanagedDependencies
+      .filter(p => os.exists(p.path))
+      .map(_.path)
+      .foreach { path =>
+        if (os.isDir(path))
+          os.walk(path).filter(file => file.toIO.isFile()).map(x => javaBuilder.addSnapshotDependencies(x.wrapped))
+        if (os.isFile(path))
+          javaBuilder.addSnapshotDependencies(path.wrapped)
+      }
+
     buildSettings.resourcesPaths
       .filter(p => os.exists(p.path))
       .map(_.path.wrapped)

@@ -118,6 +118,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
         upstreamAssemblyClasspath = outer.upstreamAssemblyClasspath().toList,
         resourcesPaths = outer.resources(),
         compiledClasses = outer.compile().classes,
+        unmanagedDependencies = outer.unmanagedClasspath().toList,
         mainClass = None,
         autoDetectMainClass = true,
         tags = tags(),
