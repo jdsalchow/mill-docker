@@ -1,0 +1,40 @@
+= Mill Docker Jib
+:sectnums:
+:toc:
+
+== TL:DR 
+
+This is a link:https://mill-build.org/[Mill] Plugin to integrate link:https://github.com/GoogleContainerTools/jib[jib]
+
+* You never heared of Jib and expect to write Dockerfiles - start here: link:#_motivation[Motivation]
+* You know what Jib is and want to know how this Plugin is built? link:#_plugin_design[Plugin Design]
+* I thought this was TL:DR - take me to the code! link:_examples[Examples]
+
+== Motivation
+
+Mill is an excellent build tool for Scala. It comes with "batteries included" and as such already has a link:https://mill-build.org/mill/0.11.12/contrib/docker.html[Docker Plugin].
+So how does this Plugin differ from the out of the box Docker Plugin? 
+
+In a nutshell the Mill contrib Docker Plugin is a thin wrapper around the Docker CLI.
+
+
+image::images/milldocker.png[Mill Docker Jib, 600, 400]
+
+
+There are a few reasons why you might want to use Jib instead of writing Dockerfiles:
+
+* Unlike the contrib Docker Plugin, Jib does not require a Docker daemon to be running. This is particularly useful in CI/CD pipelines. 
+* Jib allows you to split your application into multiple layers. This allows for more incremental builds and faster deployments which is very much in the "spirit" of Mill.
+* certain use cases are cumbersome to implement with the contrib plugin (e.g. adding a java agent to the JVM) as the build step cannot be easily customized. As its just a thin wrapper it can easily be customized with your own build step - but that was the trigger for this plugin.
+
+For a detailed introduction to Jib I recommend the following talks:
+
+image:https://img.youtube.com/vi/H6gR_Cv4yWI/maxresdefault.jpg[link:https://www.youtube.com/watch?v=H6gR_Cv4yWI, 300, 200]
+
+image:https://img.youtube.com/vi/oXS1rS6v0I8/maxresdefault.jpg[link:https://www.youtube.com/watch?v=oXS1rS6v0I8, 300, 200]
+
+
+== Plugin Design 
+
+
+== Examples

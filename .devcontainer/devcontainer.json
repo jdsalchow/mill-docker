@@ -55,6 +55,7 @@
                     "scalameta.metals",
                     "vintharas.learn-vim",
                     "mhutchie.git-graph",
+                    "asciidoctor.asciidoctor-vscode",
             ]
         }
     },

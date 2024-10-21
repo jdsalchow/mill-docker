@@ -35,17 +35,76 @@ object project extends ScalaModule with DockerJibModule {
     ivy"com.softwaremill.macwire::macros:2.6.4",
   )
 
-  override def unmanagedClasspath= T {
+  override def unmanagedClasspath = T {
     super.unmanagedClasspath() ++
       Agg.from(os.list(millSourcePath / "unmanaged")).map(PathRef(_))
-    
-  }
-  
 
+  }
 
   object docker extends DockerConfig {
-    def sourceImage = JibImage.RegistryImage("gcr.io/distroless/java:latest")
-    def targetImage = JibImage.DockerDaemonImage("ofenbeck/mill-docker/javabuildsettings")
+
+    import com.ofenbeck.mill.docker._
+
+    override def sourceImage = JibImage.RegistryImage("eclipse-temurin:21")
+    //override def targetImage = JibImage.DockerDaemonImage("ofenbeck/mill-docker/javabuildsettings:debug")
+    //override def targetImage = JibImage.TargetTarFile("ofenbeck/mill-docker/javabuildsettings:debug")
+
+    override def targetImage = JibImage.RegistryImage("ofenbeck/javabuildsettings:arm", Some(("DOCKER_USERNAME", "DOCKER_PASSWORD")))
+
+    override def labels = T {
+      Map(
+        "com.ofenbeck.mill.docker"         -> "javaBuildSettings",
+        "com.ofenbeck.mill.docker.version" -> "0.0.1",
+      )
+    }
+
+    override def jvmOptions = T {
+      Seq("-Xmx1024M", "-agentlib:jdwp=transport=dt_socket,server=y,address=8000")
+    }
+
+    override def exposedPorts = T {
+      Seq(8080, 8081)
+    }
+
+    override def exposedUdpPorts = T {
+      Seq(8082, 8083)
+    }
+
+    override def envVars = T {
+      Map(
+        "JAVA_OPTS"             -> "-Xmx1024M",
+        "JAVA_TOOL_OPTIONS_XXX" -> "-agentlib:jdwp=transport=dt_socket,server=y,address=8000",
+      )
+    }
+
+    override def user = T {
+      Some("1000")
+    }
+
+    override def platforms = T {
+      // Set(Platform("linux", "amd64"), Platform("linux", "arm64"))
+      Set(Platform("linux", "arm64"))
+     //Set(Platform("linux", "amd64"))
+    }
+
+    override def entrypoint = T {
+      Seq(
+        "sh",
+        "-c",
+        "java -cp /app/libs/*:/app/resources:/app/classes:/app/dependency/* com.ofenbeck.main & tail -f /dev/null",
+      )
+    }
+
+    /*
+    override def internalImageFormat = T { // defaults to Docker format otherwise
+      JibImageFormat.OCI: JibImageFormat
+    }
+     */
+    override def jibProgramArgs = T {
+
+      Seq("kotlin", "scala", "java")
+    }
+
   }
 }
 

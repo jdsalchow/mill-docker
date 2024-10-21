@@ -72,10 +72,18 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       */
     def envVars: T[Map[String, String]] = Map.empty[String, String]
 
-    /** Any applicable string to the USER instruction.
+    /** Sets the user and group to run the container as. {@code user} can be a username or UID along with an optional
+      * groupname or GID.
       *
-      * An empty string will be ignored and will result in USER not being specified. See also the Docker docs on
-      * [[https://docs.docker.com/engine/reference/builder/#user USER]] for more information.
+      * <p>The following are valid formats for {@code user}
+      *
+      * <ul> <li>{@code user} <li>{@code uid} <li>{@code :group} <li>{@code :gid} <li>{@code user:group} <li>{@code
+      * uid:gid} <li>{@code uid:group} <li>{@code user:gid} </ul>
+      *
+      * @param user
+      *   the user to run the container as
+      * @return
+      *   this
       */
     def user: T[Option[String]] = None
 
@@ -87,12 +95,11 @@ trait DockerJibModule extends Module { outer: JavaModule =>
 
     def entrypoint: T[Seq[String]] = Seq.empty[String]
 
-    def args: T[Seq[String]] = Seq.empty[String]
+    def jibProgramArgs: T[Seq[String]] = Seq.empty[String]
 
     def sourceImage: T[md.JibSourceImage]
 
     def targetImage: T[md.ImageReference]
-
 
     def dockerContainerConfig: T[DockerSettings] = T {
       DockerSettings(
@@ -105,7 +112,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
         platforms = platforms(),
         internalImageFormat = internalImageFormat(),
         entrypoint = entrypoint(),
-        args = args(),
+        jibProgramArgs = jibProgramArgs(),
       )
     }
 
@@ -127,7 +134,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
 
     def jibContainerBuilderHook
         : T[Option[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder]] = None
-    
+
     def javaContainerBuilderHook: T[Option[JavaContainerBuilder => JavaContainerBuilder]] = None
 
     def buildImage() = T.command {
@@ -148,7 +155,13 @@ trait DockerJibModule extends Module { outer: JavaModule =>
         case md.JibImage.DockerDaemonImage(qualifiedName, _, _) =>
           Containerizer.to(DockerDaemonImage.named(qualifiedName))
         case md.JibImage.RegistryImage(qualifiedName, credentialsEnvironment) =>
-          Containerizer.to(RegistryImage.named(qualifiedName))
+          val image = RegistryImage.named(jib.api.ImageReference.parse(qualifiedName))
+          credentialsEnvironment match {
+            case Some((username, password)) =>
+              image.addCredentialRetriever(MDShared.retrieveEnvCredentials(username, password))
+            case None =>
+          }
+          Containerizer.to(image)
         case md.JibImage.TargetTarFile(qualifiedName, filename) =>
           Containerizer.to(TarImage.at((T.dest / filename).wrapped).named(qualifiedName))
       }

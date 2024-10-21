@@ -4,12 +4,30 @@ import com.google.cloud.tools.jib.api.ImageReference
 import com.ofenbeck.mill.{docker => md}
 import java.time.Instant
 
+import java.util.Optional
+import scala.jdk.OptionConverters.RichOption
+
+import com.google.cloud.tools.jib.api.CredentialRetriever
+import com.google.cloud.tools.jib.api.Credential
+
 object MDShared {
   val toolName = "mill-docker-jib"
   def useCurrentTimestamp(useCurrentTimestamp: Boolean): Instant =
     if (useCurrentTimestamp) Instant.now() else Instant.EPOCH
 
   def isSnapshotDependency(millpath: mill.PathRef) = millpath.path.last.endsWith("-SNAPSHOT.jar")
+
+  def retrieveEnvCredentials(usernameEnv: String, passwordEnv: String): CredentialRetriever =
+    new CredentialRetriever {
+      def retrieve(): Optional[Credential] = {
+        val option = for {
+          username <- sys.env.get(usernameEnv)
+          password <- sys.env.get(passwordEnv)
+        } yield Credential.from(username, password)
+
+        option.asJava
+      }
+    }
 }
 
 final case class Platform(
@@ -50,7 +68,7 @@ final case class DockerSettings(
     val platforms: Set[Platform],
     val internalImageFormat: JibImageFormat,
     val entrypoint: Seq[String],
-    val args: Seq[String],
+    val jibProgramArgs: Seq[String],
     // volumes
     // labels
 )

@@ -2,6 +2,8 @@ integration test: download release
 itest: 0.12.X -> local ivy not working 
 
 
+mill - compile time dependencies included in runtime? 
+
 cross: publish local 13RC
 
 zsh shell: [_] not working well e.g ./mill 'itest[_]'  minimal

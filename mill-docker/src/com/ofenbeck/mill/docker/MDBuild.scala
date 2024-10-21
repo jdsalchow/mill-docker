@@ -36,7 +36,13 @@ object MDBuild {
 
     val javaBuilder = buildSettings.sourceImage match {
       case JibImage.RegistryImage(qualifiedName, credentialsEnvironment) =>
-        JavaContainerBuilder.from(RegistryImage.named(ImageReference.parse(qualifiedName)))
+        val image = RegistryImage.named(ImageReference.parse(qualifiedName))
+        credentialsEnvironment match {
+          case Some((username, password)) =>
+            image.addCredentialRetriever(MDShared.retrieveEnvCredentials(username, password))
+          case None =>
+        }
+        JavaContainerBuilder.from(image)
       case JibImage.DockerDaemonImage(qualifiedName, useFallBack, fallBackEnvCredentials) =>
         JavaContainerBuilder.from(DockerDaemonImage.named(ImageReference.parse(qualifiedName)))
       case JibImage.SourceTarFile(path) =>
@@ -163,7 +169,7 @@ object MDBuild {
     }
     containerBuilder.setLabels(dockerSettings.labels.asJava)
     containerBuilder.setUser(dockerSettings.user.orNull)
-    containerBuilder.setProgramArguments(dockerSettings.args.asJava)
+    containerBuilder.setProgramArguments(dockerSettings.jibProgramArgs.asJava)
     containerBuilder.setFormat(dockerSettings.internalImageFormat match {
       case JibImageFormat.Docker => ImageFormat.Docker
       case JibImageFormat.OCI    => ImageFormat.OCI
@@ -177,4 +183,5 @@ object MDBuild {
     dockerSettings.entrypoint.foreach(entrypoint => containerBuilder.setEntrypoint(dockerSettings.entrypoint.asJava))
     containerBuilder
   }
+
 }
