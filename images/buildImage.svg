@@ -1,0 +1,217 @@
+<svg width="713px" height="692px"
+ viewBox="0.00 0.00 713.45 692.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1.0 1.0) rotate(0.0) translate(4.0 688.0)">
+<title>example1</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-688 709.45,-688 709.45,4 -4,4"/>
+<!-- docker.labels -->
+<g id="node1" class="node">
+<title>docker.labels</title>
+<polygon fill="none" stroke="black" points="175.19,-522 42.95,-522 42.95,-486 175.19,-486 175.19,-522"/>
+<text text-anchor="middle" x="109.07" y="-499.8" font-family="Times,serif" font-size="14.00">docker.labels</text>
+</g>
+<!-- docker.dockerContainerConfig -->
+<g id="node2" class="node">
+<title>docker.dockerContainerConfig</title>
+<polygon fill="none" stroke="black" points="496.08,-306 263.79,-306 263.79,-270 496.08,-270 496.08,-306"/>
+<text text-anchor="middle" x="379.94" y="-283.8" font-family="Times,serif" font-size="14.00">docker.dockerContainerConfig</text>
+</g>
+<!-- docker.labels&#45;&gt;project.docker.dockerContainerConfig -->
+<g id="edge1" class="edge">
+<title>docker.labels&#45;&gt;project.docker.dockerContainerConfig</title>
+<path fill="none" stroke="black" d="M175.28,-494.6C190.09,-490.64 205.24,-485 218.14,-477 285.36,-435.29 338.87,-356.19 363.76,-314.78"/>
+<polygon fill="black" stroke="black" points="366.84,-316.46 368.91,-306.07 360.81,-312.9 366.84,-316.46"/>
+</g>
+<!-- docker.buildImage -->
+<g id="node16" class="node">
+<title>docker.buildImage</title>
+<polygon fill="none" stroke="black" points="705.31,-279 541.87,-279 541.87,-243 705.31,-243 705.31,-279"/>
+<text text-anchor="middle" x="623.59" y="-256.8" font-family="Times,serif" font-size="14.00">docker.buildImage</text>
+</g>
+<!-- docker.dockerContainerConfig&#45;&gt;project.docker.buildImage -->
+<g id="edge2" class="edge">
+<title>docker.dockerContainerConfig&#45;&gt;project.docker.buildImage</title>
+<path fill="none" stroke="black" d="M496.1,-275.13C508.04,-273.8 520.06,-272.46 531.68,-271.16"/>
+<polygon fill="black" stroke="black" points="532.23,-274.62 541.78,-270.03 531.45,-267.66 532.23,-274.62"/>
+</g>
+<!-- docker.jvmOptions -->
+<g id="node3" class="node">
+<title>docker.jvmOptions</title>
+<polygon fill="none" stroke="black" points="192.15,-468 26,-468 26,-432 192.15,-432 192.15,-468"/>
+<text text-anchor="middle" x="109.07" y="-445.8" font-family="Times,serif" font-size="14.00">docker.jvmOptions</text>
+</g>
+<!-- docker.jvmOptions&#45;&gt;project.docker.dockerContainerConfig -->
+<g id="edge3" class="edge">
+<title>docker.jvmOptions&#45;&gt;project.docker.dockerContainerConfig</title>
+<path fill="none" stroke="black" d="M192.36,-433.65C201.28,-430.65 210.04,-427.13 218.14,-423 273.52,-394.76 326.48,-344.23 355.66,-313.64"/>
+<polygon fill="black" stroke="black" points="358.25,-316 362.55,-306.32 353.15,-311.2 358.25,-316"/>
+</g>
+<!-- docker.exposedPorts -->
+<g id="node4" class="node">
+<title>docker.exposedPorts</title>
+<polygon fill="none" stroke="black" points="196.18,-414 21.96,-414 21.96,-378 196.18,-378 196.18,-414"/>
+<text text-anchor="middle" x="109.07" y="-391.8" font-family="Times,serif" font-size="14.00">docker.exposedPorts</text>
+</g>
+<!-- docker.exposedPorts&#45;&gt;project.docker.dockerContainerConfig -->
+<g id="edge4" class="edge">
+<title>docker.exposedPorts&#45;&gt;project.docker.dockerContainerConfig</title>
+<path fill="none" stroke="black" d="M190.65,-377.98C200.01,-375.26 209.35,-372.27 218.14,-369 260.94,-353.1 307.25,-328.97 339.13,-311.18"/>
+<polygon fill="black" stroke="black" points="341.14,-314.07 348.13,-306.11 337.7,-307.97 341.14,-314.07"/>
+</g>
+<!-- docker.exposedUdpPorts -->
+<g id="node5" class="node">
+<title>docker.exposedUdpPorts</title>
+<polygon fill="none" stroke="black" points="208.29,-360 9.85,-360 9.85,-324 208.29,-324 208.29,-360"/>
+<text text-anchor="middle" x="109.07" y="-337.8" font-family="Times,serif" font-size="14.00">docker.exposedUdpPorts</text>
+</g>
+<!-- docker.exposedUdpPorts&#45;&gt;project.docker.dockerContainerConfig -->
+<g id="edge5" class="edge">
+<title>docker.exposedUdpPorts&#45;&gt;project.docker.dockerContainerConfig</title>
+<path fill="none" stroke="black" d="M199.97,-323.94C225.42,-318.83 253.27,-313.24 279.26,-308.02"/>
+<polygon fill="black" stroke="black" points="280,-311.44 289.12,-306.04 278.63,-304.58 280,-311.44"/>
+</g>
+<!-- docker.envVars -->
+<g id="node6" class="node">
+<title>docker.envVars</title>
+<polygon fill="none" stroke="black" points="182.17,-306 35.97,-306 35.97,-270 182.17,-270 182.17,-306"/>
+<text text-anchor="middle" x="109.07" y="-283.8" font-family="Times,serif" font-size="14.00">docker.envVars</text>
+</g>
+<!-- docker.envVars&#45;&gt;project.docker.dockerContainerConfig -->
+<g id="edge6" class="edge">
+<title>docker.envVars&#45;&gt;project.docker.dockerContainerConfig</title>
+<path fill="none" stroke="black" d="M182.48,-288C204.48,-288 229.33,-288 253.77,-288"/>
+<polygon fill="black" stroke="black" points="253.84,-291.5 263.84,-288 253.84,-284.5 253.84,-291.5"/>
+</g>
+<!-- docker.user -->
+<g id="node7" class="node">
+<title>docker.user</title>
+<polygon fill="none" stroke="black" points="170.85,-252 47.29,-252 47.29,-216 170.85,-216 170.85,-252"/>
+<text text-anchor="middle" x="109.07" y="-229.8" font-family="Times,serif" font-size="14.00">docker.user</text>
+</g>
+<!-- docker.user&#45;&gt;project.docker.dockerContainerConfig -->
+<g id="edge7" class="edge">
+<title>docker.user&#45;&gt;project.docker.dockerContainerConfig</title>
+<path fill="none" stroke="black" d="M170.74,-246.19C202.67,-252.6 242.63,-260.62 278.98,-267.93"/>
+<polygon fill="black" stroke="black" points="278.64,-271.43 289.13,-269.96 280.02,-264.56 278.64,-271.43"/>
+</g>
+<!-- docker.platforms -->
+<g id="node8" class="node">
+<title>docker.platforms</title>
+<polygon fill="none" stroke="black" points="185.68,-198 32.46,-198 32.46,-162 185.68,-162 185.68,-198"/>
+<text text-anchor="middle" x="109.07" y="-175.8" font-family="Times,serif" font-size="14.00">docker.platforms</text>
+</g>
+<!-- docker.platforms&#45;&gt;project.docker.dockerContainerConfig -->
+<g id="edge8" class="edge">
+<title>docker.platforms&#45;&gt;project.docker.dockerContainerConfig</title>
+<path fill="none" stroke="black" d="M185.87,-191.3C197.31,-195.12 208.5,-200.21 218.14,-207 241.72,-223.61 230.3,-244.76 254.14,-261 256.31,-262.47 258.54,-263.87 260.82,-265.19"/>
+<polygon fill="black" stroke="black" points="259.4,-268.4 269.89,-269.93 262.64,-262.19 259.4,-268.4"/>
+</g>
+<!-- docker.internalImageFormat -->
+<g id="node9" class="node">
+<title>docker.internalImageFormat</title>
+<polygon fill="none" stroke="black" points="218.21,-144 -0.07,-144 -0.07,-108 218.21,-108 218.21,-144"/>
+<text text-anchor="middle" x="109.07" y="-121.8" font-family="Times,serif" font-size="14.00">docker.internalImageFormat</text>
+</g>
+<!-- docker.internalImageFormat&#45;&gt;project.docker.dockerContainerConfig -->
+<g id="edge9" class="edge">
+<title>docker.internalImageFormat&#45;&gt;project.docker.dockerContainerConfig</title>
+<path fill="none" stroke="black" d="M206.59,-144.25C210.71,-146.81 214.59,-149.72 218.14,-153 255.27,-187.37 216.47,-227.22 254.14,-261 255.3,-262.04 256.49,-263.04 257.71,-264.01"/>
+<polygon fill="black" stroke="black" points="255.93,-267.04 266.13,-269.9 259.94,-261.3 255.93,-267.04"/>
+</g>
+<!-- docker.entrypoint -->
+<g id="node10" class="node">
+<title>docker.entrypoint</title>
+<polygon fill="none" stroke="black" points="187.58,-90 30.56,-90 30.56,-54 187.58,-54 187.58,-90"/>
+<text text-anchor="middle" x="109.07" y="-67.8" font-family="Times,serif" font-size="14.00">docker.entrypoint</text>
+</g>
+<!-- docker.entrypoint&#45;&gt;project.docker.dockerContainerConfig -->
+<g id="edge10" class="edge">
+<title>docker.entrypoint&#45;&gt;project.docker.dockerContainerConfig</title>
+<path fill="none" stroke="black" d="M187.78,-80.22C199.12,-84.4 209.78,-90.41 218.14,-99 269.61,-151.83 201.84,-208.99 254.14,-261 255.09,-261.95 256.07,-262.86 257.07,-263.75"/>
+<polygon fill="black" stroke="black" points="255.09,-266.65 265.14,-270 259.38,-261.11 255.09,-266.65"/>
+</g>
+<!-- docker.jibProgramArgs -->
+<g id="node11" class="node">
+<title>docker.jibProgramArgs</title>
+<polygon fill="none" stroke="black" points="204.23,-36 13.91,-36 13.91,0 204.23,0 204.23,-36"/>
+<text text-anchor="middle" x="109.07" y="-13.8" font-family="Times,serif" font-size="14.00">docker.jibProgramArgs</text>
+</g>
+<!-- docker.jibProgramArgs&#45;&gt;project.docker.dockerContainerConfig -->
+<g id="edge11" class="edge">
+<title>docker.jibProgramArgs&#45;&gt;project.docker.dockerContainerConfig</title>
+<path fill="none" stroke="black" d="M204.35,-33.7C209.41,-36.86 214.07,-40.6 218.14,-45 284.16,-116.5 186.99,-190.55 254.14,-261 254.93,-261.82 255.73,-262.62 256.55,-263.4"/>
+<polygon fill="black" stroke="black" points="254.43,-266.19 264.37,-269.84 258.88,-260.79 254.43,-266.19"/>
+</g>
+<!-- docker.sourceImage -->
+<g id="node12" class="node">
+<title>docker.sourceImage</title>
+<polygon fill="none" stroke="black" points="195.05,-684 23.09,-684 23.09,-648 195.05,-648 195.05,-684"/>
+<text text-anchor="middle" x="109.07" y="-661.8" font-family="Times,serif" font-size="14.00">docker.sourceImage</text>
+</g>
+<!-- docker.buildSettings -->
+<g id="node13" class="node">
+<title>docker.buildSettings</title>
+<polygon fill="none" stroke="black" points="466.79,-603 293.08,-603 293.08,-567 466.79,-567 466.79,-603"/>
+<text text-anchor="middle" x="379.94" y="-580.8" font-family="Times,serif" font-size="14.00">docker.buildSettings</text>
+</g>
+<!-- docker.sourceImage&#45;&gt;project.docker.buildSettings -->
+<g id="edge12" class="edge">
+<title>docker.sourceImage&#45;&gt;project.docker.buildSettings</title>
+<path fill="none" stroke="black" d="M185.57,-647.95C196.53,-645.09 207.65,-642.07 218.14,-639 251.81,-629.16 288.95,-616.78 319.05,-606.37"/>
+<polygon fill="black" stroke="black" points="320.27,-609.65 328.57,-603.06 317.97,-603.04 320.27,-609.65"/>
+</g>
+<!-- docker.buildSettings&#45;&gt;project.docker.buildImage -->
+<g id="edge13" class="edge">
+<title>docker.buildSettings&#45;&gt;project.docker.buildImage</title>
+<path fill="none" stroke="black" d="M394.62,-566.65C435.24,-512.19 555.26,-351.27 602.84,-287.48"/>
+<polygon fill="black" stroke="black" points="605.88,-289.26 609.06,-279.15 600.27,-285.07 605.88,-289.26"/>
+</g>
+<!-- docker.targetImage -->
+<g id="node14" class="node">
+<title>docker.targetImage</title>
+<polygon fill="none" stroke="black" points="192.38,-630 25.76,-630 25.76,-594 192.38,-594 192.38,-630"/>
+<text text-anchor="middle" x="109.07" y="-607.8" font-family="Times,serif" font-size="14.00">docker.targetImage</text>
+</g>
+<!-- docker.targetImage&#45;&gt;project.docker.buildSettings -->
+<g id="edge14" class="edge">
+<title>docker.targetImage&#45;&gt;project.docker.buildSettings</title>
+<path fill="none" stroke="black" d="M192.57,-603.72C221.01,-600.86 253.12,-597.63 282.58,-594.68"/>
+<polygon fill="black" stroke="black" points="283.27,-598.12 292.87,-593.64 282.57,-591.16 283.27,-598.12"/>
+</g>
+<!-- docker.tags -->
+<g id="node15" class="node">
+<title>docker.tags</title>
+<polygon fill="none" stroke="black" points="170.08,-576 48.06,-576 48.06,-540 170.08,-540 170.08,-576"/>
+<text text-anchor="middle" x="109.07" y="-553.8" font-family="Times,serif" font-size="14.00">docker.tags</text>
+</g>
+<!-- docker.tags&#45;&gt;project.docker.buildSettings -->
+<g id="edge15" class="edge">
+<title>docker.tags&#45;&gt;project.docker.buildSettings</title>
+<path fill="none" stroke="black" d="M170.41,-564.06C203.6,-567.39 245.54,-571.6 283.1,-575.38"/>
+<polygon fill="black" stroke="black" points="282.75,-578.86 293.05,-576.38 283.45,-571.89 282.75,-578.86"/>
+</g>
+<!-- docker.javaContainerBuilderHook -->
+<g id="node17" class="node">
+<title>docker.javaContainerBuilderHook</title>
+<polygon fill="none" stroke="black" points="505.52,-252 254.35,-252 254.35,-216 505.52,-216 505.52,-252"/>
+<text text-anchor="middle" x="379.94" y="-229.8" font-family="Times,serif" font-size="14.00">docker.javaContainerBuilderHook</text>
+</g>
+<!-- docker.javaContainerBuilderHook&#45;&gt;project.docker.buildImage -->
+<g id="edge16" class="edge">
+<title>docker.javaContainerBuilderHook&#45;&gt;project.docker.buildImage</title>
+<path fill="none" stroke="black" d="M505.66,-247.93C514.35,-248.91 523.02,-249.88 531.49,-250.82"/>
+<polygon fill="black" stroke="black" points="531.37,-254.33 541.69,-251.96 532.14,-247.37 531.37,-254.33"/>
+</g>
+<!-- docker.jibContainerBuilderHook -->
+<g id="node18" class="node">
+<title>docker.jibContainerBuilderHook</title>
+<polygon fill="none" stroke="black" points="501.48,-198 258.39,-198 258.39,-162 501.48,-162 501.48,-198"/>
+<text text-anchor="middle" x="379.94" y="-175.8" font-family="Times,serif" font-size="14.00">docker.jibContainerBuilderHook</text>
+</g>
+<!-- docker.jibContainerBuilderHook&#45;&gt;project.docker.buildImage -->
+<g id="edge17" class="edge">
+<title>docker.jibContainerBuilderHook&#45;&gt;project.docker.buildImage</title>
+<path fill="none" stroke="black" d="M475.23,-198.08C485.61,-200.75 495.95,-203.73 505.73,-207 530.95,-215.44 557.98,-227.7 579.68,-238.41"/>
+<polygon fill="black" stroke="black" points="578.12,-241.54 588.63,-242.89 581.25,-235.28 578.12,-241.54"/>
+</g>
+</g>
+</svg>

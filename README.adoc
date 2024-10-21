@@ -18,23 +18,137 @@ So how does this Plugin differ from the out of the box Docker Plugin?
 In a nutshell the Mill contrib Docker Plugin is a thin wrapper around the Docker CLI.
 
 
-image::images/milldocker.png[Mill Docker Jib, 600, 400]
+image::images/milldocker.png[Mill Contrib Docker, 600, 400]
 
 
 There are a few reasons why you might want to use Jib instead of writing Dockerfiles:
 
 * Unlike the contrib Docker Plugin, Jib does not require a Docker daemon to be running. This is particularly useful in CI/CD pipelines. 
-* Jib allows you to split your application into multiple layers. This allows for more incremental builds and faster deployments which is very much in the "spirit" of Mill.
-* certain use cases are cumbersome to implement with the contrib plugin (e.g. adding a java agent to the JVM) as the build step cannot be easily customized. As its just a thin wrapper it can easily be customized with your own build step - but that was the trigger for this plugin.
+* By default the Contrib Plugin creates a "fat jar" and puts it as a single layer in the container. As a consequence the whole container needs to be rebuilt if only a single class file changes. 
+* Certain use cases are cumbersome to implement with the contrib plugin (e.g. adding a java agent to the JVM) as the link:https://github.com/com-lihaoyi/mill/blob/main/contrib/docker/src/mill/contrib/docker/DockerModule.scala[build step] cannot be easily customized. As its just a thin wrapper it can easily be replaced with your own build step - but that was the trigger for creating this plugin.
 
 For a detailed introduction to Jib I recommend the following talks:
 
-image:https://img.youtube.com/vi/H6gR_Cv4yWI/maxresdefault.jpg[link:https://www.youtube.com/watch?v=H6gR_Cv4yWI, 300, 200]
+image:https://img.youtube.com/vi/H6gR_Cv4yWI/maxresdefault.jpg[link=https://www.youtube.com/watch?v=H6gR_Cv4yWI, 300, 200]
 
-image:https://img.youtube.com/vi/oXS1rS6v0I8/maxresdefault.jpg[link:https://www.youtube.com/watch?v=oXS1rS6v0I8, 300, 200]
+image:https://img.youtube.com/vi/oXS1rS6v0I8/maxresdefault.jpg[link=https://www.youtube.com/watch?v=oXS1rS6v0I8, 300, 200]
 
+
+In short Jib:
+
+* Jib allows you to split your application into multiple layers. This allows for more incremental builds and faster deployments which is very much in the link:https://mill-build.org/mill/0.11.12/Mill_Design_Principles.html["spirit" of Mill]. This allows for faster deployments and more incremental builds as you only need to rebuild the layer that changed. (e.g. only your application code without its  dependencies).
+* Jib can pull, build and deploy directy to and from a container registry without the need for a Docker daemon.
+
+image::images//jibdocker.png[Mill Docker Jib, 600, 400]
 
 == Plugin Design 
+
+The plugin task graph looks like this:
+
+image::images/buildImage.svg[Setting Tasks for buildImage, 600, 400]
+
+The leaf nodes are the settings that can be modified by the user and are described here in detail:  link:#_plugin_configuration[Plugin Configuration].
+The BuildSettings tasks pulls the output of the JavaBuild Module to then create the appropriate layers.
+The various input tasks can be seen in the following graph:
+
+image::images/buildSettings.svg[Input Tasks used for Layer generation, 1200, 700]
+
+
+In terms of execution the next graph shows the high level flow of the plugin
+The source Image is pulled and used as Base Layer. 
+The artifacts from various JavaModule tasks are used to fill the other layers. 
+The layers are used as input for a link:http://www.javadoc.io/page/com.google.cloud.tools/jib-core/latest/com/google/cloud/tools/jib/api/JavaContainerBuilder.html[Java Container Builder].
+
+The optional user provided javaContainerBuilderHook can be used to customize the link:http://www.javadoc.io/page/com.google.cloud.tools/jib-core/latest/com/google/cloud/tools/jib/api/JibContainerBuilder.html[Jib Container Builder].
+For even more customization the user can provide a custom JibContainerBuilder which allows to freely modify/discard and add layers to the default layers created in the previous steps.
+
+Finally the container is built using the user provided container parameters and pushed to the according target image format (Container Registry, Docker Daemon, Tarball).
+
+
+image::images/plugin_flow.svg[Plugin Flow, 1200, 700]
+
+
+== Plugin Configuration
+
+[cols="1,1,1,1", options="header"]
+|===
+|Parameter |Type |Description |Required
+
+|sourceImage
+|com.ofenbeck.mill.docker.JibSourceImage
+|Source image for the container.
+|X
+
+|targetImage
+|com.ofenbeck.mill.docker.ImageReference
+|Target image for the container.
+|X
+
+|labels
+|Map[String, String]
+|Labels to add to the Docker image.
+|
+
+|tags
+|Seq[String]
+|Tags to add to the Docker image.
+|
+
+|jvmOptions
+|Seq[String]
+|JVM runtime options for the container.
+|
+
+|exposedPorts
+|Seq[Int]
+|TCP ports the container will listen to at runtime.
+|
+
+|exposedUdpPorts
+|Seq[Int]
+|UDP ports the container will listen to at runtime.
+|
+
+|envVars
+|Map[String, String]
+|Environment variables for the container.
+|
+
+|user
+|Option[String]
+|User and group to run the container as.
+|
+
+|platforms
+|Set[md.Platform]
+|Target platforms for the container.
+|
+
+|internalImageFormat
+|md.JibImageFormat
+|Internal image format to use.
+|
+
+|entrypoint
+|Seq[String]
+|Entrypoint command for the container.
+|
+
+|jibProgramArgs
+|Seq[String]
+|Program arguments for the container.
+|
+
+|jibContainerBuilderHook
+|Option[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder]
+|Hook to modify the JibContainerBuilder before building the container.
+|
+
+|javaContainerBuilderHook
+|Option[JavaContainerBuilder => JavaContainerBuilder]
+|Hook to modify the JavaContainerBuilder before building the container.
+|
+|===
 
 
 == Examples

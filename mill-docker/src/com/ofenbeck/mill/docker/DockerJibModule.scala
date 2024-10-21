@@ -59,16 +59,13 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       */
     def exposedUdpPorts: T[Seq[Int]] = Seq.empty[Int]
 
-    /** The names of mount points.
+    /** Sets the container environment. These environment variables are available to the program launched by the
+      * container entrypoint command. This replaces any previously-set environment variables.
       *
-      * See also the Docker docs on [[https://docs.docker.com/engine/reference/builder/#volume volumes]] for more
-      * information.
-      */
-    def volumes: T[Seq[String]] = Seq.empty[String]
-
-    /** Environment variables to be set in the container.
-      *
-      * See also the Docker docs on [[https://docs.docker.com/engine/reference/builder/#env ENV]] for more information.
+      * <p>This is similar to <a href="https://docs.docker.com/engine/reference/builder/#env">{@code ENV} in
+      * Dockerfiles</a> or {@code env} in the <a
+      * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#container-v1-core">Kubernetes
+      * Container spec</a>.
       */
     def envVars: T[Map[String, String]] = Map.empty[String, String]
 
@@ -80,25 +77,49 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       * <ul> <li>{@code user} <li>{@code uid} <li>{@code :group} <li>{@code :gid} <li>{@code user:group} <li>{@code
       * uid:gid} <li>{@code uid:group} <li>{@code user:gid} </ul>
       *
-      * @param user
-      *   the user to run the container as
-      * @return
-      *   this
       */
     def user: T[Option[String]] = None
 
+    /** Define the target platform for the container. This is a list of platforms that the final image can run on.
+      * Note that for when using the Docker daemon as the target, the platform must be compatible with the host.
+      */
     def platforms: T[Set[md.Platform]] = Set.empty[md.Platform]
 
+    /**
+      * The internal image format to use. This is the format that Jib will use to build the image. The default is
+      * Docker.
+      */
     def internalImageFormat: T[md.JibImageFormat] = T {
       md.JibImageFormat.Docker: JibImageFormat
     }
 
+    /**
+      * The entrypoint for the container. This is the command that will be run when the container starts. 
+      * If none is provided the jib default is used. 
+      * ENTRYPOINT ["java", jib.container.jvmFlags, "-cp", "/app/resources:/app/classes:/app/libs/",
+      *  jib.container.mainClass]
+      *  CMD [jib.container.args])
+      *
+      */
+
     def entrypoint: T[Seq[String]] = Seq.empty[String]
 
+    /**
+      * The program arguments for the container. This is the arguments that will be passed to the main class of the
+      * container. If none is provided the jib default is used.
+      * This is NOT Docker ARGS
+      */
     def jibProgramArgs: T[Seq[String]] = Seq.empty[String]
 
+    /**
+      * One of the 3 possible image sources (tar, registry, docker daemon) for the source image.
+      * @return
+      */
     def sourceImage: T[md.JibSourceImage]
 
+    /** One of the 3 possible image targets (tar, registry, docker daemon) for the target image.
+      * @return
+      */
     def targetImage: T[md.ImageReference]
 
     def dockerContainerConfig: T[DockerSettings] = T {
@@ -132,9 +153,21 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       )
     }
 
+    /**
+      * Hook to modify the JibContainerBuilder before it is used to build the container.
+      * A "empty" JibContainerBuilder is passed to the hook (from the configured SoureImage).
+      * In addition the FileEntriesLayer and the entrypoints of a default JavaBuild are passed to the hook.
+      * You have to add both again to the "empty" JibContainerBuilder to get the same behavior as the default JavaBuild.
+      * @return The return value is used for further processing of the JibContainerBuilder - so full replacement is
+      * possible.
+      */
     def jibContainerBuilderHook
         : T[Option[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder]] = None
 
+    /** Hook to modify the JavaContainerBuilder before it is used to build the container.
+      * @return The return value is used for further processing of the JavaContainerBuilder - so full replacement is
+      * possible.
+      */
     def javaContainerBuilderHook: T[Option[JavaContainerBuilder => JavaContainerBuilder]] = None
 
     def buildImage() = T.command {
