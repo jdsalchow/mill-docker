@@ -45,6 +45,14 @@ In short Jib:
 
 image::images//jibdocker.png[Mill Docker Jib, 600, 400]
 
+== In Action
+
+This is a terminal recording of the plugin in action - using the link:https://github.com/wagoodman/dive[dive] tool it compares the images created by the contrib Docker Plugin on the left and the Jib Plugin on the right.
+The example uses link:https://github.com/LaurenceWarne/libro-finito[libro-finito] as a case study.
+As you can see the Jib Plugin separates the major size contributors into separate layers. This allows for more incremental builds and faster deployments.
+
+image::images//libro_finito.gif[https://github.com/LaurenceWarne/libro-finito, 800, 800]
+
 == Plugin Design 
 
 The plugin task graph looks like this:
