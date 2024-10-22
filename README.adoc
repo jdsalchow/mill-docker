@@ -6,9 +6,9 @@
 
 This is a link:https://mill-build.org/[Mill] Plugin to integrate link:https://github.com/GoogleContainerTools/jib[jib]
 
-* You never heared of Jib and expect to write Dockerfiles - start here: link:#_motivation[Motivation]
-* You know what Jib is and want to know how this Plugin is built? link:#_plugin_design[Plugin Design]
-* I thought this was TL:DR - take me to the code! link:_examples[Examples]
+* You never heared of Jib and expect to write Dockerfiles - start here: xref:#_motivation[Motivation]
+* You know what Jib is and want to know how this Plugin is built? xref:#_plugin_design[Plugin Design]
+* I thought this was TL:DR - take me to the code! xref:_examples[Examples]
 
 == Motivation
 
