@@ -76,43 +76,34 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       *
       * <ul> <li>{@code user} <li>{@code uid} <li>{@code :group} <li>{@code :gid} <li>{@code user:group} <li>{@code
       * uid:gid} <li>{@code uid:group} <li>{@code user:gid} </ul>
-      *
       */
     def user: T[Option[String]] = None
 
-    /** Define the target platform for the container. This is a list of platforms that the final image can run on.
-      * Note that for when using the Docker daemon as the target, the platform must be compatible with the host.
+    /** Define the target platform for the container. This is a list of platforms that the final image can run on. Note
+      * that for when using the Docker daemon as the target, the platform must be compatible with the host.
       */
     def platforms: T[Set[md.Platform]] = Set.empty[md.Platform]
 
-    /**
-      * The internal image format to use. This is the format that Jib will use to build the image. The default is
+    /** The internal image format to use. This is the format that Jib will use to build the image. The default is
       * Docker.
       */
     def internalImageFormat: T[md.JibImageFormat] = T {
       md.JibImageFormat.Docker: JibImageFormat
     }
 
-    /**
-      * The entrypoint for the container. This is the command that will be run when the container starts. 
-      * If none is provided the jib default is used. 
-      * ENTRYPOINT ["java", jib.container.jvmFlags, "-cp", "/app/resources:/app/classes:/app/libs/",
-      *  jib.container.mainClass]
-      *  CMD [jib.container.args])
-      *
+    /** The entrypoint for the container. This is the command that will be run when the container starts. If none is
+      * provided the jib default is used. ENTRYPOINT ["java", jib.container.jvmFlags, "-cp",
+      * "/app/resources:/app/classes:/app/libs/", jib.container.mainClass] CMD [jib.container.args])
       */
 
     def entrypoint: T[Seq[String]] = Seq.empty[String]
 
-    /**
-      * The program arguments for the container. This is the arguments that will be passed to the main class of the
-      * container. If none is provided the jib default is used.
-      * This is NOT Docker ARGS
+    /** The program arguments for the container. This is the arguments that will be passed to the main class of the
+      * container. If none is provided the jib default is used. This is NOT Docker ARGS
       */
     def jibProgramArgs: T[Seq[String]] = Seq.empty[String]
 
-    /**
-      * One of the 3 possible image sources (tar, registry, docker daemon) for the source image.
+    /** One of the 3 possible image sources (tar, registry, docker daemon) for the source image.
       * @return
       */
     def sourceImage: T[md.JibSourceImage]
@@ -153,24 +144,23 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       )
     }
 
-    /**
-      * Hook to modify the JibContainerBuilder before it is used to build the container.
-      * A "empty" JibContainerBuilder is passed to the hook (from the configured SoureImage).
-      * In addition the FileEntriesLayer and the entrypoints of a default JavaBuild are passed to the hook.
-      * You have to add both again to the "empty" JibContainerBuilder to get the same behavior as the default JavaBuild.
-      * @return The return value is used for further processing of the JibContainerBuilder - so full replacement is
-      * possible.
+    /** Hook to modify the JibContainerBuilder before it is used to build the container. A "empty" JibContainerBuilder
+      * is passed to the hook (from the configured SoureImage). In addition the FileEntriesLayer and the entrypoints of
+      * a default JavaBuild are passed to the hook. You have to add both again to the "empty" JibContainerBuilder to get
+      * the same behavior as the default JavaBuild.
+      * @return
+      *   The return value is used for further processing of the JibContainerBuilder - so full replacement is possible.
       */
     def jibContainerBuilderHook
         : T[Option[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder]] = None
 
     /** Hook to modify the JavaContainerBuilder before it is used to build the container.
-      * @return The return value is used for further processing of the JavaContainerBuilder - so full replacement is
-      * possible.
+      * @return
+      *   The return value is used for further processing of the JavaContainerBuilder - so full replacement is possible.
       */
     def javaContainerBuilderHook: T[Option[JavaContainerBuilder => JavaContainerBuilder]] = None
 
-    def buildImage() = T.command {
+    def buildImage(): T[String] = T.command {
 
       val logger     = T.ctx().log
       val dockerConf = dockerContainerConfig()
@@ -209,6 +199,12 @@ trait DockerJibModule extends Module { outer: JavaModule =>
         .setToolName(MDShared.toolName)
       // TODO: check how we could combine jib and mill caching
       val container = jibContainerBuilder.containerize(containerizerWithToolSet)
+      s"""{
+         |   "image": "${container.getTargetImage}",
+         |   "imageId": "${container.getImageId}",
+         |   "imageDigest": "${container.getDigest}",
+         |   "tags": ${container.getTags.asScala.mkString("[\"", "\", \"", "\"]")}
+         |}""".stripMargin
     }
   }
 }
