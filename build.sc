@@ -11,7 +11,7 @@ import mill.scalalib.publish._
 import mill.scalalib.api.ZincWorkerUtil._
 import mill.scalalib.publish.{Developer, License, PomSettings, VersionControl}
 
-val millVersions = Seq("0.11.12")//,"0.12.0-RC3")
+val millVersions = Seq("0.11.12") //,"0.12.0-RC3")
 val jibCore      = "0.27.1"
 //def millBinaryVersion(millVersion: String) = scalaNativeBinaryVersion(millVersion)
 
@@ -24,7 +24,7 @@ trait MillDockerCross extends CrossModuleBase with GitVersionedPublishModule wit
   override def crossScalaVersion = "2.13.15"
 
   override def compileIvyDeps = super.compileIvyDeps() ++ Agg(
-   // ivy"com.lihaoyi::mill-scalalib:$millVersion"
+    // ivy"com.lihaoyi::mill-scalalib:$millVersion"
   )
 
   override def ivyDeps = super.ivyDeps() ++ Agg(
@@ -32,7 +32,6 @@ trait MillDockerCross extends CrossModuleBase with GitVersionedPublishModule wit
     ivy"com.lihaoyi::mill-main:$millVersion",
     ivy"com.lihaoyi::mill-scalalib:$millVersion",
   )
-  
 
   def pomSettings = PomSettings(
     description = "A docker plugin for Mill build tool",
@@ -40,10 +39,9 @@ trait MillDockerCross extends CrossModuleBase with GitVersionedPublishModule wit
     url = "https://github.com/georgofenbeck/mill-docker",
     licenses = Seq(License.MIT),
     versionControl = VersionControl.github("georgofenbeck", "mill-docker"),
-    developers = Seq(Developer("georgofenbeck", "Georg Ofenbeck", "https://github.com/georgofenbeck"))
+    developers = Seq(Developer("georgofenbeck", "Georg Ofenbeck", "https://github.com/georgofenbeck")),
   )
 }
-
 
 object itest extends Cross[ITestCross](millVersions)
 trait ITestCross extends MillIntegrationTestModule with Cross.Module[String] {
@@ -51,15 +49,58 @@ trait ITestCross extends MillIntegrationTestModule with Cross.Module[String] {
   override def millTestVersion  = millVersion
   override def pluginsUnderTest = Seq(`mill-docker`(millVersion))
 
-  override def testInvocations = T{
-    testCases().map(
-      _ -> Seq(
-        TestInvocation.Targets(Seq("check"))
-      )
+  override def testInvocations = T {
+
+    testCases().map(pathref =>
+      pathref match {
+        case p if p.toString.contains("imagetypes") =>
+          p -> Seq(
+            TestInvocation.Targets(
+              Seq(
+                "registry2demon.docker.buildImage",
+              ),
+            ),
+            TestInvocation.Targets(
+              Seq(
+                "registry2tar.docker.buildImage",
+              ),
+            ),
+            TestInvocation.Targets(
+              Seq(
+                "registry2tar.docker.buildImage",
+              ),
+            ),
+            TestInvocation.Targets(
+              Seq(
+                "registry2registry.docker.buildImage",
+              ),
+            ),
+            TestInvocation.Targets(
+              Seq(
+                "demon2demon.docker.buildImage",
+              ),
+            ),
+            TestInvocation.Targets(
+              Seq(
+                "demon2tar.docker.buildImage",
+              ),
+            ),
+            TestInvocation.Targets(
+              Seq(
+                "demon2registry.docker.buildImage",
+              ),
+            ),
+          )
+        case path =>
+          path -> Seq(
+            TestInvocation.Targets(Seq("check")),
+          )
+      },
     )
+
   }
-    
-    /* testCases().map(
+
+  /* testCases().map(
     _ -> Seq(
       TestInvocation.Targets(Seq("check"))
     )

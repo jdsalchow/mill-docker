@@ -160,9 +160,20 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       */
     def javaContainerBuilderHook: T[Option[JavaContainerBuilder => JavaContainerBuilder]] = None
 
-    def buildImage(): T[String] = T.command {
+    case class BuildResult(
+        image: String,
+        imageId: String,
+        imageDigest: String,
+        path: Option[PathRef],
+    )
 
-      val logger     = T.ctx().log
+    object BuildResult {
+      implicit def jsonCodec: upickle.default.ReadWriter[BuildResult] = upickle.default.macroRW
+    }
+
+    def buildImage: T[BuildResult] = T{
+      val logger = T.ctx().log
+      logger.info("Building image")
       val dockerConf = dockerContainerConfig()
       val buildConf  = buildSettings()
 
@@ -199,12 +210,17 @@ trait DockerJibModule extends Module { outer: JavaModule =>
         .setToolName(MDShared.toolName)
       // TODO: check how we could combine jib and mill caching
       val container = jibContainerBuilder.containerize(containerizerWithToolSet)
-      s"""{
-         |   "image": "${container.getTargetImage}",
-         |   "imageId": "${container.getImageId}",
-         |   "imageDigest": "${container.getDigest}",
-         |   "tags": ${container.getTags.asScala.mkString("[\"", "\", \"", "\"]")}
-         |}""".stripMargin
+
+      BuildResult(
+        image = container.getTargetImage.toString(),
+        imageId = container.getImageId.toString(),
+        imageDigest = container.getDigest.toString(),
+        path = buildConf.targetImage match {
+          case md.JibImage.TargetTarFile(_, filename) => Some(PathRef(T.dest / filename))
+          case _                                     => None
+        },
+      )
+
     }
   }
 }

@@ -23,9 +23,6 @@ object project extends ScalaModule with DockerJibModule {
     def sourceImage = JibImage.RegistryImage("alpine:latest")
     def targetImage = JibImage.DockerDaemonImage("ofenbeck/mill-docker/minimal")
     
-    override def platforms = T {
-      Set(Platform("linux", "amd64"), Platform("linux", "arm64"))
-    }
   }
 }
 

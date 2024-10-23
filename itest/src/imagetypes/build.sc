@@ -85,17 +85,5 @@ object demon2registry extends ScalaModule with DockerJibModule {
 }
 
 
-/*
-def check() = T.command {
-  val a = registry2demon.docker.buildImage()
-/*  s"""${} 
-//  registry2tar.docker.buildImage()
- // registry2registry.docker.buildImage()
-  ${demon2demon.docker.buildImage()}
-  //demon2tar.docker.buildImage()
-  //demon2registry.docker.buildImage()
-  """*/
 
-  println(a)
-}
-*/
+
