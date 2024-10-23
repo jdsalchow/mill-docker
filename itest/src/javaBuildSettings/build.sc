@@ -46,8 +46,6 @@ object project extends ScalaModule with DockerJibModule {
     import com.ofenbeck.mill.docker._
 
     override def sourceImage = JibImage.RegistryImage("eclipse-temurin:21")
-    //override def targetImage = JibImage.DockerDaemonImage("ofenbeck/mill-docker/javabuildsettings:debug")
-    //override def targetImage = JibImage.TargetTarFile("ofenbeck/mill-docker/javabuildsettings:debug")
 
     override def targetImage = JibImage.RegistryImage("ofenbeck/javabuildsettings:arm", Some(("DOCKER_USERNAME", "DOCKER_PASSWORD")))
 
@@ -82,9 +80,7 @@ object project extends ScalaModule with DockerJibModule {
     }
 
     override def platforms = T {
-      // Set(Platform("linux", "amd64"), Platform("linux", "arm64"))
       Set(Platform("linux", "arm64"))
-     //Set(Platform("linux", "amd64"))
     }
 
     override def entrypoint = T {
@@ -95,15 +91,6 @@ object project extends ScalaModule with DockerJibModule {
       )
     }
 
-    /*
-    override def internalImageFormat = T { // defaults to Docker format otherwise
-      JibImageFormat.OCI: JibImageFormat
-    }
-     */
-    override def jibProgramArgs = T {
-
-      Seq("kotlin", "scala", "java")
-    }
 
   }
 }

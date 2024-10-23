@@ -170,16 +170,18 @@ Be aware that the examples include the plugin through a test specific mechanism.
 
 If you want to ues the code outside replace accordingly.
 
-[source,scala]
-----
-include::itest/src/imagetypes/build.sc[tag=replace]
-----
-
 === All possible input / output image types 
 
-[source,scala]
-----
-include::itest/src/imagetypes/build.sc[tag=snippet]
-----
-
 See all possible input/output combinations link:itest/src/imagetypes[here].
+
+=== Simple Input Configuration Example
+
+An example of standard settings you might wanna modify link:itest/src/buildsettings[here]
+
+=== Java Container Builder Hook Example
+
+An example modifying the Java Container Builder link:itest/src/javacontainerbuilderhook[here]
+
+=== Jib Container Builder Hook Example
+
+An example modifying the Jib Container Builder link:itest/src/jibcontainerbuilderhook[here]
