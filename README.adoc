@@ -172,14 +172,14 @@ If you want to ues the code outside replace accordingly.
 
 [source,scala]
 ----
-include::itest/src/imagetypes/build.sc[tags=replace]
+include::itest/src/imagetypes/build.sc[tag=replace]
 ----
 
 === All possible input / output image types 
 
 [source,scala]
 ----
-include::itest/src/imagetypes/build.sc[tags=snippet]
+include::itest/src/imagetypes/build.sc[tag=snippet]
 ----
 
 See all possible input/output combinations link:itest/src/imagetypes[here].
