@@ -164,3 +164,22 @@ image::images/plugin_flow.svg[Plugin Flow,800, 400]
 
 
 == Examples
+
+All examples are at the same time integration tests and can be found in the link:itest/src[itest/src] folder.
+Be aware that the examples include the plugin through a test specific mechanism.
+
+If you want to ues the code outside replace accordingly.
+
+[source,scala]
+----
+include::itest/src/imagetypes/build.sc[tags=replace]
+----
+
+=== All possible input / output image types 
+
+[source,scala]
+----
+include::itest/src/imagetypes/build.sc[tags=snippet]
+----
+
+See all possible input/output combinations link:itest/src/imagetypes[here].

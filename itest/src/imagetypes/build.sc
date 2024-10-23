@@ -1,4 +1,8 @@
+//tag::replace[]
 import $file.plugins
+//BE AWARE:  if used outside the test suite this needs to be:
+//import $ivy.`com.ofenbeck::mill-docker:<VERSION>`
+//end::replace[]
 import mill._
 import mill.scalalib._
 
@@ -43,7 +47,7 @@ object registry2registry extends ScalaModule with DockerJibModule {
     def targetImage = JibImage.RegistryImage("ofenbeck/registry2registry", Some(("DOCKER_USERNAME", "DOCKER_PASSWORD")))
   }
 }
-
+// tag::snippet[]
 /* ================================= From a your local Docker Demon ================================= */
 
 /** From your local demon to your local demon. Note the Fallback settings (by default true). This will fetch from a
@@ -61,7 +65,7 @@ object demon2demon extends ScalaModule with DockerJibModule {
     def targetImage = JibImage.DockerDaemonImage("ofenbeck/mill-docker/demon2demon")
   }
 }
-
+//end::snippet[]
 /** From your local demon to a tar file
   */
 object demon2tar extends ScalaModule with DockerJibModule {
@@ -85,5 +89,37 @@ object demon2registry extends ScalaModule with DockerJibModule {
 }
 
 
+/* ================================= From a local Tar File ================================= */
+
+// The tar use case can be usefull for debugging and transfering images to secured machines 
+
+object tar2demon extends ScalaModule with DockerJibModule {
+  def scalaVersion = "3.3.3"
+
+  override def moduleDeps = Seq(demon2tar)
+  object docker extends DockerConfig {
+    def sourceImage = JibImage.SourceTarFile(demon2tar.docker.buildImage().path.get)
+    def targetImage = JibImage.DockerDaemonImage("ofenbeck/mill-docker/tar2demon")
+  }
+}
 
 
+object tar2tar extends ScalaModule with DockerJibModule {
+  def scalaVersion = "3.3.3"
+
+  override def moduleDeps = Seq(demon2tar)
+  object docker extends DockerConfig {
+    def sourceImage = JibImage.SourceTarFile(demon2tar.docker.buildImage().path.get)
+    def targetImage = JibImage.TargetTarFile("ofenbeck/mill-docker/tar2demon")
+  }
+}
+
+object tar2registry extends ScalaModule with DockerJibModule {
+  def scalaVersion = "3.3.3"
+
+  override def moduleDeps = Seq(demon2tar)
+  object docker extends DockerConfig {
+    def sourceImage = JibImage.SourceTarFile(demon2tar.docker.buildImage().path.get)
+    def targetImage = JibImage.RegistryImage("ofenbeck/tar2registry", Some(("DOCKER_USERNAME", "DOCKER_PASSWORD")))
+  }
+}

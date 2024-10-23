@@ -1,3 +1,4 @@
+import mill.scalalib.publish.Scope.Test
 import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.7.1`
 import $ivy.`com.goyeau::mill-git::0.2.5`
 
@@ -88,6 +89,21 @@ trait ITestCross extends MillIntegrationTestModule with Cross.Module[String] {
             TestInvocation.Targets(
               Seq(
                 "demon2registry.docker.buildImage",
+              ),
+            ),
+            TestInvocation.Targets(
+              Seq(
+                "tar2demon.docker.buildImage",
+              ),
+            ), 
+            TestInvocation.Targets(
+              Seq(
+                "tar2tar.docker.buildImage",
+              ),
+            ),
+            TestInvocation.Targets(
+              Seq(
+                "tar2registry.docker.buildImage",
               ),
             ),
           )
