@@ -152,14 +152,21 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       *   The return value is used for further processing of the JibContainerBuilder - so full replacement is possible.
       */
     def jibContainerBuilderHook
-        : T[Option[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder]] = None
+        : Option[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder] = None
 
     /** Hook to modify the JavaContainerBuilder before it is used to build the container.
       * @return
       *   The return value is used for further processing of the JavaContainerBuilder - so full replacement is possible.
       */
-    def javaContainerBuilderHook: T[Option[JavaContainerBuilder => JavaContainerBuilder]] = None
+    def javaContainerBuilderHook(javaBuilder: JavaContainerBuilder): Task[JavaContainerBuilder] = T.task{
+      javaBuilder
+    }
 
+
+
+    
+
+    
     case class BuildResult(
         image: String,
         imageId: String,
@@ -171,7 +178,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       implicit def jsonCodec: upickle.default.ReadWriter[BuildResult] = upickle.default.macroRW
     }
 
-    def buildImage: T[BuildResult] = T{
+    def buildImage: T[BuildResult] = T {
       val logger = T.ctx().log
       logger.info("Building image")
       val dockerConf = dockerContainerConfig()
@@ -181,9 +188,10 @@ trait DockerJibModule extends Module { outer: JavaModule =>
         buildSettings = buildConf,
         dockerSettings = dockerConf,
         logger = logger,
-        javaContainerBuilderHook = javaContainerBuilderHook(),
-        jibContainerBuilderHook = jibContainerBuilderHook(),
+        javaContainerBuilderHook = javaContainerBuilderHook,
+        jibContainerBuilderHook = jibContainerBuilderHook,
       )
+
 
       val containerizer = buildConf.targetImage match {
         case md.JibImage.DockerDaemonImage(qualifiedName, _, _) =>
@@ -217,7 +225,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
         imageDigest = container.getDigest.toString(),
         path = buildConf.targetImage match {
           case md.JibImage.TargetTarFile(_, filename) => Some(PathRef(T.dest / filename))
-          case _                                     => None
+          case _                                      => None
         },
       )
 

@@ -109,7 +109,8 @@ trait ITestCross extends MillIntegrationTestModule with Cross.Module[String] {
           )
         case path =>
           path -> Seq(
-            TestInvocation.Targets(Seq("check")),
+            //TestInvocation.Targets(Seq("project.docker.buildImage")),
+            TestInvocation.Targets(Seq("project.docker.downloadAzureAgent")),
           )
       },
     )
