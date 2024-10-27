@@ -1,5 +1,6 @@
 import java.nio.file.Path
-import $file.plugins
+//import $file.plugins
+import $ivy.`com.ofenbeck::mill-docker:0.0.3-SNAPSHOT`
 import mill._
 import mill.scalalib._
 import os._
@@ -23,18 +24,21 @@ object project extends ScalaModule with DockerJibModule {
     def downloadAzureAgent: T[PathRef] = T {
       val azureAgentUrl =
         "https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.6.1/applicationinsights-agent-3.6.1.jar"
-      val dest: os.Path = T.ctx().dest / "applicationinsights-agent-3.6.1.jar"
+      val taskDownloadDir = T.ctx().dest
+      val dest: os.Path = taskDownloadDir / "applicationinsights-agent-3.6.1.jar"
       val in            = new java.net.URL(azureAgentUrl).openStream()
       try
         Files.copy(in, dest.wrapped, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
       finally
         in.close()
-      PathRef(dest)
+      PathRef(taskDownloadDir)
     }
 
-    override def javaContainerBuilderHook(builder: JavaContainerBuilder): Command[Unit] = T.command {
-        //builder.addResources(downloadAzureAgent().path.wrapped)
-        //T.ctx().log.info("Added Azure agent to the container")
+    override def javaContainerBuilderHook(builderTask: Task[JavaContainerBuilder]): Task[JavaContainerBuilder] = Task.Anon {
+        T.ctx().log.info("Added Azure agent to the container")
+        val builder = builderTask()
+        builder.addResources(downloadAzureAgent().path.wrapped) 
+        builder
     }
 
     override def jvmOptions = T {

@@ -22,6 +22,8 @@ import com.google.cloud.tools.jib.api.MainClassFinder
 import com.google.cloud.tools.jib.api.buildplan.LayerObject
 import com.google.cloud.tools.jib.api.buildplan.FileEntry
 import mill.define.Command
+import mill._, define.Task
+
 
 object MDBuild {
 
@@ -29,11 +31,8 @@ object MDBuild {
       dockerSettings: DockerSettings,
       buildSettings: BuildSettings,
       logger: mill.api.Logger,
-      javaContainerBuilderHook: (JavaContainerBuilder => Command[Unit]),
-      jibContainerBuilderHook: Option[
-        (JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder,
-      ],
-  ): JibContainerBuilder = {
+  ): JavaContainerBuilder = {
+    //JibContainerBuilder = {
 
     val javaBuilder = buildSettings.sourceImage match {
       case JibImage.RegistryImage(qualifiedName, credentialsEnvironment) =>
@@ -81,15 +80,8 @@ object MDBuild {
 
     javaBuilder.addJvmFlags(dockerSettings.jvmOptions.asJava)
 
-    javaContainerBuilderHook(javaBuilder) //side effectful hook
-    //val javaBuilderPostHook = javaContainerBuilderHook.map(hook => hook(javaBuilder)).getOrElse(javaBuilder)
-    val containerBuilder    = javaBuilder.toContainerBuilder()
-
-    val jibContainerBuilderPostHook = jibContainerBuilderHook
-      .map(hook => customizeLayers(containerBuilder, buildSettings, logger, hook))
-      .getOrElse(containerBuilder)
-
-    setContainerParams(dockerSettings, buildSettings, logger, jibContainerBuilderPostHook)
+    javaBuilder
+    
   }
 
   def customizeLayers(

@@ -12,7 +12,8 @@ import mill.scalalib.publish._
 import mill.scalalib.api.ZincWorkerUtil._
 import mill.scalalib.publish.{Developer, License, PomSettings, VersionControl}
 
-val millVersions = Seq("0.11.12") //,"0.12.0-RC3")
+val millVersions = Seq("0.12.0") //,"0.12.0-RC3")
+//val millVersions = Seq("0.11.12")
 val jibCore      = "0.27.1"
 //def millBinaryVersion(millVersion: String) = scalaNativeBinaryVersion(millVersion)
 
@@ -110,7 +111,7 @@ trait ITestCross extends MillIntegrationTestModule with Cross.Module[String] {
         case path =>
           path -> Seq(
             //TestInvocation.Targets(Seq("project.docker.buildImage")),
-            TestInvocation.Targets(Seq("project.docker.downloadAzureAgent")),
+            TestInvocation.Targets(Seq("project.docker.buildImage")),
           )
       },
     )

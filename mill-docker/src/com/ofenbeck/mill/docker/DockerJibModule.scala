@@ -158,15 +158,11 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       * @return
       *   The return value is used for further processing of the JavaContainerBuilder - so full replacement is possible.
       */
-    def javaContainerBuilderHook(javaBuilder: JavaContainerBuilder): Task[JavaContainerBuilder] = T.task{
-      javaBuilder
+
+    def javaContainerBuilderHook(javaBuilder: Task[JavaContainerBuilder]): Task[JavaContainerBuilder] = Task.Anon {
+      javaBuilder()
     }
 
-
-
-    
-
-    
     case class BuildResult(
         image: String,
         imageId: String,
@@ -178,20 +174,39 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       implicit def jsonCodec: upickle.default.ReadWriter[BuildResult] = upickle.default.macroRW
     }
 
-    def buildImage: T[BuildResult] = T {
-      val logger = T.ctx().log
+
+    def helper(): Task[JavaContainerBuilder] = Task.Anon{
+      
+      val logger = T.ctx().log 
       logger.info("Building image")
       val dockerConf = dockerContainerConfig()
       val buildConf  = buildSettings()
 
-      val jibContainerBuilder = MDBuild.javaBuild(
+      val javaBuilder = 
+        MDBuild.javaBuild(
         buildSettings = buildConf,
         dockerSettings = dockerConf,
         logger = logger,
-        javaContainerBuilderHook = javaContainerBuilderHook,
-        jibContainerBuilderHook = jibContainerBuilderHook,
       )
+      javaBuilder
+    }
 
+    def buildImage: T[BuildResult] = T {
+      val logger = T.ctx().log 
+      logger.info("Building image")
+      val dockerConf = dockerContainerConfig()
+      val buildConf  = buildSettings()
+
+      val javaBuilderPostHook = javaContainerBuilderHook(helper())()
+      val containerBuilder    = javaBuilderPostHook.toContainerBuilder()
+/*
+      val jibContainerBuilderPostHook = jibContainerBuilderHook
+        .map(hook => customizeLayers(containerBuilder, buildSettings, logger, hook))
+        .getOrElse(containerBuilder)
+*/
+      val jibContainerBuilderPostHook = containerBuilder
+      
+      MDBuild.setContainerParams(dockerConf, buildConf, logger, jibContainerBuilderPostHook)
 
       val containerizer = buildConf.targetImage match {
         case md.JibImage.DockerDaemonImage(qualifiedName, _, _) =>
@@ -217,7 +232,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
         .setAllowInsecureRegistries(buildConf.setAllowInsecureRegistries)
         .setToolName(MDShared.toolName)
       // TODO: check how we could combine jib and mill caching
-      val container = jibContainerBuilder.containerize(containerizerWithToolSet)
+      val container = containerBuilder.containerize(containerizerWithToolSet)
 
       BuildResult(
         image = container.getTargetImage.toString(),
