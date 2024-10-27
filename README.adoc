@@ -8,6 +8,7 @@ This is a link:https://mill-build.org/[Mill] Plugin to integrate link:https://gi
 
 * You never heared of Jib and expect to write Dockerfiles - start here: xref:#motivation[Motivation]
 * You know what Jib is and want to know how this Plugin is built? xref:#plugin-design[Plugin Design]
+* Quick start up times of the container is what you care most? See the excellent existing plugins link:https://mill-build.org/mill/0.12.1/extending/thirdparty-plugins.html#_native_image[Native Image Plugin] and https://mill-build.org/mill/0.12.1/extending/thirdparty-plugins.html#_docker_native_image_packager[Docker Native Image Plugin] 
 * I thought this was TL:DR - take me to the code! xref:examples[Examples]
 
 == Motivation
@@ -180,8 +181,15 @@ An example of standard settings you might wanna modify link:itest/src/buildsetti
 
 === Java Container Builder Hook Example
 
-An example modifying the Java Container Builder link:itest/src/javacontainerbuilderhook[here]
+An example modifying the Java Container Builder link:itest/src/jvmAgent[here]
 
 === Jib Container Builder Hook Example
 
 An example modifying the Jib Container Builder link:itest/src/jibcontainerbuilderhook[here]
+
+
+=== Future Work
+
+* Jlink support for smaller images 
+* Better support for multi module projects (right now the plugin treats them as upstream dependencies - which is not always what you want)
+* Native Image use case investigation
