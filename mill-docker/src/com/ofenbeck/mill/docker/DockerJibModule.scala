@@ -27,6 +27,7 @@ import com.google.cloud.tools.jib.api.Containerizer
 import com.google.cloud.tools.jib.api.DockerDaemonImage
 import com.google.cloud.tools.jib.api.TarImage
 import com.google.cloud.tools.jib.api.RegistryImage
+import com.google.cloud.tools.jib.api.Jib
 
 trait DockerJibModule extends Module { outer: JavaModule =>
 
@@ -144,15 +145,21 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       )
     }
 
-    /** Hook to modify the JibContainerBuilder before it is used to build the container. A "empty" JibContainerBuilder
+    /** Hook to modify the JibContainerBuilder before it is used to build the container. An "empty" JibContainerBuilder
       * is passed to the hook (from the configured SoureImage). In addition the FileEntriesLayer and the entrypoints of
       * a default JavaBuild are passed to the hook. You have to add both again to the "empty" JibContainerBuilder to get
       * the same behavior as the default JavaBuild.
       * @return
       *   The return value is used for further processing of the JibContainerBuilder - so full replacement is possible.
       */
-    def jibContainerBuilderHook
-        : Option[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder] = None
+    def jibContainerBuilderHook(sofar: Task[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String])]): Task[JibContainerBuilder] = Task.Anon{
+        val (jibBuilder, jiblayers, entrypoints) = sofar()
+        val newJibBuilder = Jib.fromScratch() 
+        jiblayers.map(layer => newJibBuilder.addFileEntriesLayer(layer))
+        newJibBuilder.setEntrypoint(entrypoints.asJava)
+        newJibBuilder
+    }
+    //    : Option[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder] = None
 
     /** Hook to modify the JavaContainerBuilder before it is used to build the container.
       * @return
@@ -175,8 +182,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
     }
 
 
-    def helper(): Task[JavaContainerBuilder] = Task.Anon{
-      
+    def getJavaBuilder(): Task[JavaContainerBuilder] = Task.Anon{
       val logger = T.ctx().log 
       logger.info("Building image")
       val dockerConf = dockerContainerConfig()
@@ -191,21 +197,36 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       javaBuilder
     }
 
+    def getJibLayers(postHookJavaBuilder: Task[JavaContainerBuilder]): Task[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String])] = Task.Anon{ 
+      val buildConf  = buildSettings()
+      val logger = T.ctx().log 
+      val containerBuilder    = postHookJavaBuilder().toContainerBuilder()
+      MDBuild.customizeLayers(containerBuilder, buildConf, logger)
+    }
+
+    def getPostHookJibContainerBuilder(): Task[JibContainerBuilder] = Task.Anon{
+      val logger = T.ctx().log 
+      logger.info("Building image")
+      val dockerConf = dockerContainerConfig()
+      val buildConf  = buildSettings()
+
+      val javaBuilderPostHook: Task[JavaContainerBuilder] = javaContainerBuilderHook(getJavaBuilder())
+ 
+      val layerComponents:  Task[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String])] = getJibLayers(javaBuilderPostHook) 
+
+      //return javaBuilderPostHook().toContainerBuilder()
+      val jibContainerBuilderPostHook: Task[JibContainerBuilder] = jibContainerBuilderHook(layerComponents) 
+      return jibContainerBuilderPostHook  //complile error without the return - macro magic?
+      
+    }
+
     def buildImage: T[BuildResult] = T {
       val logger = T.ctx().log 
       logger.info("Building image")
       val dockerConf = dockerContainerConfig()
       val buildConf  = buildSettings()
 
-      val javaBuilderPostHook = javaContainerBuilderHook(helper())()
-      val containerBuilder    = javaBuilderPostHook.toContainerBuilder()
-/*
-      val jibContainerBuilderPostHook = jibContainerBuilderHook
-        .map(hook => customizeLayers(containerBuilder, buildSettings, logger, hook))
-        .getOrElse(containerBuilder)
-*/
-      val jibContainerBuilderPostHook = containerBuilder
-      
+      val jibContainerBuilderPostHook = getPostHookJibContainerBuilder()() 
       MDBuild.setContainerParams(dockerConf, buildConf, logger, jibContainerBuilderPostHook)
 
       val containerizer = buildConf.targetImage match {
@@ -232,7 +253,11 @@ trait DockerJibModule extends Module { outer: JavaModule =>
         .setAllowInsecureRegistries(buildConf.setAllowInsecureRegistries)
         .setToolName(MDShared.toolName)
       // TODO: check how we could combine jib and mill caching
-      val container = containerBuilder.containerize(containerizerWithToolSet)
+      
+      
+      
+      val container = jibContainerBuilderPostHook.containerize(containerizerWithToolSet)
+
 
       BuildResult(
         image = container.getTargetImage.toString(),

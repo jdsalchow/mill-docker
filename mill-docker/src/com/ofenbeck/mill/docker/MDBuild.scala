@@ -88,8 +88,7 @@ object MDBuild {
       containerBuilder: JibContainerBuilder,
       buildSettings: BuildSettings,
       logger: mill.api.Logger,
-      hook: (JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder,
-  ): JibContainerBuilder = {
+  ): (JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) = {
 
     val containerBuildPlan = containerBuilder.toContainerBuildPlan()
     val jiblayers          = containerBuildPlan.getLayers().asScala.toVector
@@ -118,7 +117,7 @@ object MDBuild {
     )
 
     val fileEntriesLayer = jiblayers.collect { case fl: FileEntriesLayer => fl }
-    hook(jibBuilder, fileEntriesLayer, entrypoints.asScala.toVector)
+    (jibBuilder, fileEntriesLayer, entrypoints.asScala.toVector)
   }
 
   def setMainClass(buildSettings: BuildSettings, javaBuilder: JavaContainerBuilder, logger: mill.api.Logger): Unit =

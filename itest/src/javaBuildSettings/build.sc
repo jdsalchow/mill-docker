@@ -1,5 +1,6 @@
 import java.nio.file.Path
-import $file.plugins
+//import $file.plugins
+import $ivy.`com.ofenbeck::mill-docker:0.0.3-SNAPSHOT`
 import mill._
 import mill.scalalib._
 import os._
