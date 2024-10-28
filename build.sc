@@ -12,7 +12,7 @@ import mill.scalalib.publish._
 import mill.scalalib.api.ZincWorkerUtil._
 import mill.scalalib.publish.{Developer, License, PomSettings, VersionControl}
 
-val millVersions = Seq("0.12.0") //,"0.12.0-RC3")
+val millVersions = Seq("0.12.1") //,"0.12.0-RC3")
 //val millVersions = Seq("0.11.12")
 val jibCore      = "0.27.1"
 //def millBinaryVersion(millVersion: String) = scalaNativeBinaryVersion(millVersion)

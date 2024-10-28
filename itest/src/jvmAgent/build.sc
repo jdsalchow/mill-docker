@@ -18,8 +18,10 @@ object project extends ScalaModule with DockerJibModule {
 
     override def sourceImage = JibImage.RegistryImage("eclipse-temurin:21")
 
+    //override def targetImage = JibImage.RegistryImage("ofenbeck/jvmagent:arm", Some(("DOCKER_USERNAME", "DOCKER_PASSWORD")))
+    
     override def targetImage =
-      JibImage.DockerDaemonImage("ofenbeck/jvmagent")
+      JibImage.DockerDaemonImage("ofenbeck/jvmagent:local")
 
     def downloadAzureAgent: T[PathRef] = T {
       val azureAgentUrl =
@@ -43,6 +45,11 @@ object project extends ScalaModule with DockerJibModule {
 
     override def jvmOptions = T {
       Seq("-Xmx1024M", "-javaagent:/applicationinsights-agent-3.6.1.jar")
+    }
+
+  
+    override def platforms = T {
+      Set(Platform("linux", "arm64"))
     }
 
   }
