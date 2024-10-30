@@ -183,7 +183,6 @@ trait DockerJibModule extends Module { outer: JavaModule =>
 
     def getJavaBuilder(): Task[JavaContainerBuilder] = Task.Anon {
       val logger = T.ctx().log
-      logger.info("Building image")
       val dockerConf = dockerContainerConfig()
       val buildConf  = buildSettings()
 
@@ -205,19 +204,13 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       MDBuild.customizeLayers(containerBuilder, buildConf, logger)
     }
 
+    //the strange code style is due to the Task macro 
     def getPostHookJavaContainerBuilder(): Task[JavaContainerBuilder] = Task.Anon {
-      val logger     = T.ctx().log
-      val dockerConf = dockerContainerConfig()
-      val buildConf  = buildSettings()
       javaContainerBuilderHook(getJavaBuilder())()
     }
 
     def getPostHookJibContainerBuilder(): Task[JibContainerBuilder] = Task.Anon {
-      val logger     = T.ctx().log
-      val dockerConf = dockerContainerConfig()
-      val buildConf  = buildSettings()
       jibContainerBuilderHook(getJibLayers(getPostHookJavaContainerBuilder()))()
-      // javaContainerBuilderHook(getJavaBuilder())))()
     }
 
     def buildImage: T[BuildResult] = T {
