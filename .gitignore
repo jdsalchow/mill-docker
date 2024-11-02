@@ -114,3 +114,5 @@ ENV/
 
 /cmd
 /testDeployed
+/7-writing-mill-plugins
+/issue

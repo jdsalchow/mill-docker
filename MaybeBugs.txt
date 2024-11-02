@@ -19,3 +19,6 @@ nesting Task[_]
 
 
 0.11.12 link docs not working
+
+
+.mill add to scalafmt
