@@ -37,5 +37,7 @@ Example Tester
     having an out folder (e.g. testing the project without the Tester) causes a crash
 
 
+cross - test -> compiles the full cross
+
 Usefull commmands:
 ./mill mill-docker.test.testOnly -- com.ofenbeck.mill.docker.ImageTypesUnitTests.registry2demon
