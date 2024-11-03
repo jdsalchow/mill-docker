@@ -6,7 +6,7 @@
 
 This is a link:https://mill-build.org/[Mill] Plugin to integrate link:https://github.com/GoogleContainerTools/jib[jib]
 
-* You never heared of Jib and expect to write Dockerfiles - start here: xref:#motivation[Motivation]
+* You never heard of Jib and expect to write Dockerfiles - start here: xref:#motivation[Motivation]
 * You know what Jib is and want to know how this Plugin is built? xref:#plugin-design[Plugin Design]
 * Quick start up times of the container is what you care most? See the excellent existing plugins link:https://mill-build.org/mill/0.12.1/extending/thirdparty-plugins.html#_native_image[Native Image Plugin] and https://mill-build.org/mill/0.12.1/extending/thirdparty-plugins.html#_docker_native_image_packager[Docker Native Image Plugin] 
 * I thought this was TL:DR - take me to the code! xref:examples[Examples]
@@ -26,7 +26,7 @@ There are a few reasons why you might want to use Jib instead of writing Dockerf
 
 * Unlike the contrib Docker Plugin, Jib does not require a Docker daemon to be running. This is particularly useful in CI/CD pipelines. 
 * By default the Contrib Plugin creates a "fat jar" and puts it as a single layer in the container. As a consequence the whole container needs to be rebuilt if only a single class file changes. 
-* Certain use cases are cumbersome to implement with the contrib plugin (e.g. adding a java agent to the JVM) as the link:https://github.com/com-lihaoyi/mill/blob/main/contrib/docker/src/mill/contrib/docker/DockerModule.scala[build step] cannot be easily customized. As its just a thin wrapper it can easily be replaced with your own build step - but that was the trigger for creating this plugin.
+* Certain use cases are cumbersome to implement with the contrib plugin (e.g. adding a java agent to the JVM). The link:https://github.com/com-lihaoyi/mill/blob/main/contrib/docker/src/mill/contrib/docker/DockerModule.scala[build step] cannot be easily customized as it is just a thin wrapper. It can easily be replaced with your own build step, but that was the trigger for creating this plugin.
 
 For a detailed introduction to Jib I recommend the following talks:
 
@@ -41,15 +41,15 @@ image:https://img.youtube.com/vi/oXS1rS6v0I8/maxresdefault.jpg[link=https://www.
 
 In short Jib:
 
-* Jib allows you to split your application into multiple layers. This allows for more incremental builds and faster deployments which is very much in the link:https://mill-build.org/mill/0.11.12/Mill_Design_Principles.html["spirit" of Mill]. This allows for faster deployments and more incremental builds as you only need to rebuild the layer that changed. (e.g. only your application code without its  dependencies).
-* Jib can pull, build and deploy directy to and from a container registry without the need for a Docker daemon.
+* Jib allows you to split your application into multiple layers. This allows for more incremental builds and faster deployments which is very much in the link:https://mill-build.org/mill/0.11.12/Mill_Design_Principles.html["spirit" of Mill]. You only need to rebuild the layer that changed (e.g. only your application code without its dependencies).
+* Jib can pull, build and deploy directly to and from a container registry without the need for a Docker daemon. The local Docker demon or a Tar file can be used as alternative sources/targets.
 
 image::images//jibdocker.png[Mill Docker Jib, 600, 400]
 
 == In Action
 
 This is a terminal recording of the plugin in action - using the link:https://github.com/wagoodman/dive[dive] tool it compares the images created by the contrib Docker Plugin on the left and the Jib Plugin on the right.
-The example uses link:https://github.com/LaurenceWarne/libro-finito[libro-finito] as a case study.
+The example uses link:https://github.com/LaurenceWarne/libro-finito[libro-finito]. It serves as a case study.
 As you can see the Jib Plugin separates the major size contributors into separate layers. This allows for more incremental builds and faster deployments.
 
 image::images//libro_finito.gif[https://github.com/LaurenceWarne/libro-finito, 800, 800]
@@ -89,7 +89,7 @@ image::images/plugin_flow.svg[Plugin Flow,800, 400]
 
 |sourceImage
 |com.ofenbeck.mill.docker.JibSourceImage
-|Source image for the container. Examles of all possible source image types can be found link:mill-docker/test/resources/examples-imagetypes[here].
+|Source image for the container. Examples of all possible source image types can be found link:mill-docker/test/resources/examples-imagetypes[here].
 |X
 
 |targetImage
@@ -169,7 +169,7 @@ image::images/plugin_flow.svg[Plugin Flow,800, 400]
 All examples are at the same time integration tests and can be found in the link:mill-docker/test/resources[mill-docker/test/resources/] folder.
 Be aware that the examples include the plugin through a test specific mechanism.
 
-If you want to ues the code outside replace accordingly.
+If you want to use the code outside replace accordingly.
 
 === All possible input / output image types 
 
