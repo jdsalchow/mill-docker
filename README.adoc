@@ -89,17 +89,17 @@ image::images/plugin_flow.svg[Plugin Flow,800, 400]
 
 |sourceImage
 |com.ofenbeck.mill.docker.JibSourceImage
-|Source image for the container.
+|Source image for the container. Examles of all possible source image types can be found link:mill-docker/test/resources/examples-imagetypes[here].
 |X
 
 |targetImage
 |com.ofenbeck.mill.docker.ImageReference
-|Target image for the container.
+|Target image for the container. Examples of all possible target image types can be found link:mill-docker/test/resources/examples-imagetypes[here].
 |X
 
 |labels
 |Map[String, String]
-|Labels to add to the Docker image.
+|Labels to add to the Docker image. This and most of the following settings can be found link:mill-docker/test/resources/examples-buildsettings[here].
 |
 
 |tags
@@ -153,20 +153,20 @@ image::images/plugin_flow.svg[Plugin Flow,800, 400]
 |
 
 |jibContainerBuilderHook
-|Option[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) => JibContainerBuilder]
-|Hook to modify the JibContainerBuilder before building the container.
+|Task[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String])] => Task[JibContainerBuilder]
+|Hook to modify the JibContainerBuilder before building the container. See the example link:mill-docker/test/resources/examples-customjibbuild[here].
 |
 
 |javaContainerBuilderHook
-|Option[JavaContainerBuilder => JavaContainerBuilder]
-|Hook to modify the JavaContainerBuilder before building the container.
+|Task[JavaContainerBuilder] => Task[JavaContainerBuilder]
+|Hook to modify the JavaContainerBuilder before building the container. See the example link:mill-docker/test/resources/examples-jvmagent[here].
 |
 |===
 
 
 == Examples
 
-All examples are at the same time integration tests and can be found in the link:mill-docker/test/resources[itest/src] folder.
+All examples are at the same time integration tests and can be found in the link:mill-docker/test/resources[mill-docker/test/resources/] folder.
 Be aware that the examples include the plugin through a test specific mechanism.
 
 If you want to ues the code outside replace accordingly.
