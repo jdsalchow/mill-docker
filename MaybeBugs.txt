@@ -22,3 +22,20 @@ nesting Task[_]
 
 
 .mill add to scalafmt
+
+type errors T[Seq[String]] = Seq.empty
+
+MILL Resource path -> only from within mill (testkit)
+
+
+Example Tester:
+"    else "C:\\Program Files\\Git\\usr\\bin\\bash.exe""
+
+Example Tester - would be nice if output was also persistet
+
+
+
+
+
+Usefull commmands:
+./mill mill-docker.test.testOnly -- com.ofenbeck.mill.docker.ImageTypesUnitTests.registry2demon

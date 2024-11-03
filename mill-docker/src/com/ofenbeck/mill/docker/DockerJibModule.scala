@@ -35,7 +35,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
 
     def labels: T[Map[String, String]] = Map.empty[String, String]
 
-    def tags: T[Seq[String]] = T(List(outer.artifactName()))
+    def tags: T[Seq[String]] = Seq.empty[String] 
 
     /** JVM runtime options. Each item of the Seq should consist of an option and its desired value, like
       * {{{

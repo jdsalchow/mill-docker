@@ -24,7 +24,6 @@ import com.google.cloud.tools.jib.api.buildplan.FileEntry
 import mill.define.Command
 import mill._, define.Task
 
-
 object MDBuild {
 
   def javaBuild(
@@ -32,7 +31,7 @@ object MDBuild {
       buildSettings: BuildSettings,
       logger: mill.api.Logger,
   ): JavaContainerBuilder = {
-    //JibContainerBuilder = {
+    // JibContainerBuilder = {
 
     val javaBuilder = buildSettings.sourceImage match {
       case JibImage.RegistryImage(qualifiedName, credentialsEnvironment) =>
@@ -81,7 +80,7 @@ object MDBuild {
     javaBuilder.addJvmFlags(dockerSettings.jvmOptions.asJava)
 
     javaBuilder
-    
+
   }
 
   def customizeLayers(
@@ -102,8 +101,11 @@ object MDBuild {
         Jib.from(TarImage.at(path.path.wrapped))
     }
 
-    val entrypoints = containerBuildPlan.getEntrypoint()
-    entrypoints.asScala.foreach(entrypoint => logger.info(s"Entrypoint: $entrypoint"))
+    val entrypoints = containerBuildPlan.getEntrypoint() // can be null if no entrypoints are present
+    val entrypointVector: Vector[String] = if (entrypoints != null && !entrypoints.isEmpty()) {
+      entrypoints.asScala.foreach(entrypoint => logger.info(s"Entrypoint: $entrypoint"))
+      entrypoints.asScala.toVector
+    } else Vector.empty
     jiblayers.foreach(layer =>
       layer match {
         case fl: FileEntriesLayer =>
@@ -117,7 +119,7 @@ object MDBuild {
     )
 
     val fileEntriesLayer = jiblayers.collect { case fl: FileEntriesLayer => fl }
-    (jibBuilder, fileEntriesLayer, entrypoints.asScala.toVector)
+    (jibBuilder, fileEntriesLayer, entrypointVector)
   }
 
   def setMainClass(buildSettings: BuildSettings, javaBuilder: JavaContainerBuilder, logger: mill.api.Logger): Unit =
