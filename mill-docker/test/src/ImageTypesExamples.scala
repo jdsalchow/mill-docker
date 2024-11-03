@@ -10,7 +10,7 @@ object ImageTypesExamples extends TestSuite {
 
       ExampleTester.run(
         clientServerMode = true,
-        workspaceSourcePath = resourceFolder / "examples-buildSettings",
+        workspaceSourcePath = resourceFolder / "examples-buildsettings",
         millExecutable = os.Path(sys.env("MILL_EXECUTABLE_PATH"))
       )
     }

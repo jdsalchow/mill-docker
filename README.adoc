@@ -173,19 +173,19 @@ If you want to ues the code outside replace accordingly.
 
 === All possible input / output image types 
 
-See all possible input/output combinations link:itest/src/imagetypes[here].
+See all possible input/output combinations link:mill-docker/test/resources/examples-imageTypes[here].
 
 === Simple Input Configuration Example
 
-An example of standard settings you might wanna modify link:itest/src/buildsettings[here]
+An example of standard settings you might wanna modify link:mill-docker/test/resources/examples-buildsettings[here]
 
 === Java Container Builder Hook Example
 
-An example modifying the Java Container Builder link:itest/src/jvmAgent[here]
+An example modifying the Java Container Builder link:mill-docker/test/resources/examples-jvmagent[here]
 
 === Jib Container Builder Hook Example
 
-An example modifying the Jib Container Builder link:itest/src/jibcontainerbuilderhook[here]
+An example modifying the Jib Container Builder link:mill-docker/test/resources/examples-customjibbuild[here]
 
 
 === Future Work

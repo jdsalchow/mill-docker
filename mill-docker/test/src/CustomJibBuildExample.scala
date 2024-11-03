@@ -10,7 +10,7 @@ object CustomJibBuildExample extends TestSuite {
 
       ExampleTester.run(
         clientServerMode = true,
-        workspaceSourcePath = resourceFolder / "examples-customJibBuild",
+        workspaceSourcePath = resourceFolder / "examples-customjibbuild",
         millExecutable = os.Path(sys.env("MILL_EXECUTABLE_PATH"))
       )
     }

@@ -10,7 +10,7 @@ object CustomJavaBuildExample extends TestSuite {
 
       ExampleTester.run(
         clientServerMode = true,
-        workspaceSourcePath = resourceFolder / "examples-jvmAgent",
+        workspaceSourcePath = resourceFolder / "examples-jvmagent",
         millExecutable = os.Path(sys.env("MILL_EXECUTABLE_PATH"))
       )
     }
