@@ -53,7 +53,9 @@ object `mill-docker` extends ScalaModule with PublishModule {
 
   // Testing Config, with necessary setup for unit/integration/example tests
   object test extends ScalaTests with TestModule.Utest {
-    def ivyDeps = Agg(ivy"com.lihaoyi::mill-testkit:$millVersion")
+    def ivyDeps = Agg(ivy"com.lihaoyi::mill-testkit:$millVersion",
+        //ivy"com.google.cloud.tools:jib-core:${versions.jibCore}",  // hm - why is this not working?
+    )
     def forkEnv = Map("MILL_EXECUTABLE_PATH" -> millExecutable.assembly().path.toString)
 
     // Create a Mill executable configured for testing our plugin
