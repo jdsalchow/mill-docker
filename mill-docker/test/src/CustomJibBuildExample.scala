@@ -2,7 +2,7 @@ package com.ofenbeck.mill.docker
 import mill.testkit.ExampleTester
 import utest._
 
-object ImageTypesExamples extends TestSuite {
+object CustomJibBuildExample extends TestSuite {
 
   def tests: Tests = Tests {
     test("image types") {
@@ -10,7 +10,7 @@ object ImageTypesExamples extends TestSuite {
 
       ExampleTester.run(
         clientServerMode = true,
-        workspaceSourcePath = resourceFolder / "examples-buildSettings",
+        workspaceSourcePath = resourceFolder / "examples-customJibBuild",
         millExecutable = os.Path(sys.env("MILL_EXECUTABLE_PATH"))
       )
     }

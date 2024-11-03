@@ -33,8 +33,8 @@ Example Tester:
 
 Example Tester - would be nice if output was also persistet
 
-
-
+Example Tester
+    having an out folder (e.g. testing the project without the Tester) causes a crash
 
 
 Usefull commmands:

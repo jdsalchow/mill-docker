@@ -2,7 +2,7 @@ package com.ofenbeck.mill.docker
 import mill.testkit.ExampleTester
 import utest._
 
-object ImageTypesExamples extends TestSuite {
+object JavaBuildSettingsExample extends TestSuite {
 
   def tests: Tests = Tests {
     test("image types") {
