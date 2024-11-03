@@ -188,7 +188,7 @@ An example modifying the Java Container Builder link:mill-docker/test/resources/
 An example modifying the Jib Container Builder link:mill-docker/test/resources/examples-customjibbuild[here]
 
 
-=== Future Work
+== Future Work
 
 * Jlink support for smaller images 
 * Better support for multi module projects (right now the plugin treats them as upstream dependencies - which is not always what you want)
