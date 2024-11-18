@@ -1,5 +1,4 @@
-import $ivy.`com.ofenbeck::mill-docker_mill0.11:0.0.5-SNAPSHOT`
-
+import $ivy.`com.ofenbeck::mill-docker_mill0.11:0.0.1`
 import mill._
 import mill.scalalib._
 
