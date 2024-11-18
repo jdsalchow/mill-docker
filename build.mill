@@ -2,6 +2,9 @@ import mill.scalalib.publish.Scope.Test
 import $ivy.`com.goyeau::mill-git::0.2.5`
 
 import com.goyeau.mill.git.GitVersionedPublishModule
+import $ivy.`com.lihaoyi::mill-contrib-sonatypecentral:`
+import mill.contrib.sonatypecentral.SonatypeCentralPublishModule
+
 
 import mill._
 import mill.scalalib._
@@ -14,14 +17,28 @@ import mill.main.BuildInfo.millVersion
 import mill._, scalalib._, publish._
 
 object versions {
-  val millVersions = Seq("0.12.0", "0.12.1")
+  val millVersions = Seq("0.12.0", "0.12.1","0.12.2")
   val jibCore      = "0.27.1"
 }
 
 
 object `mill-docker` extends Cross[MillDockerCross](versions.millVersions) {
 }
-trait MillDockerCross extends CrossModuleBase with ScalaModule with PublishModule with Cross.Module[String] {
+trait MillDockerCross extends CrossModuleBase with ScalaModule with PublishModule with SonatypeCentralPublishModule with Cross.Module[String] {
+
+  override def sonatypeCentralGpgArgs: T[String] =
+    Seq(
+        "--passphrase=$MILL_PGP_PASSPHRASE",
+        "--no-tty",
+        "--pinentry-mode",
+        "loopback",
+        "--batch",
+        "--yes",
+        "-a",
+        "-b"
+    ).mkString(",")
+  
+  override def sonatypeCentralShouldRelease: T[Boolean] = Task { false }
 
   def millVersion                = crossValue
   override def crossScalaVersion = "2.13.15"
@@ -35,7 +52,7 @@ object `mill-docker` extends ScalaModule with PublishModule {
   // Set the `platformSuffix` so the name indicates what Mill version it is compiled for
   def platformSuffix = "_mill" + mill.main.BuildInfo.millBinPlatform
 
-  override def publishVersion: T[String] = "0.0.5-SNAPSHOT"
+  override def publishVersion: T[String] = "0.0.1"
 
   override def ivyDeps = super.ivyDeps() ++ Agg(
     ivy"com.lihaoyi:mill-dist:$millVersion",
@@ -43,7 +60,7 @@ object `mill-docker` extends ScalaModule with PublishModule {
   )
 
   def pomSettings = PomSettings(
-    description = "A docker plugin for Mill build tool",
+    description = "A docker plugin for the Mill build tool",
     organization = "com.ofenbeck",
     url = "https://github.com/georgofenbeck/mill-docker",
     licenses = Seq(License.MIT),
