@@ -156,7 +156,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       implicit def jsonCodec: upickle.default.ReadWriter[BuildResult] = upickle.default.macroRW
     }
 
-    /** Hook to modify the JavaContainerBuilder before it is used to build the container.
+    /** The JavaContainerBuilder before it is used to build the container.
       * @return
       *   The return value is used for further processing of the JavaContainerBuilder - so full replacement is possible.
       */
@@ -173,18 +173,18 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       javaContainerBuilder
     }
 
-    /** Hook to modify the JibContainerBuilder before it is used to build the container. An "empty" JibContainerBuilder
-      * is passed to the hook (from the configured SoureImage). In addition the FileEntriesLayer and the entrypoints of
-      * a default JavaBuild are passed to the hook. You have to add both again to the "empty" JibContainerBuilder to get
-      * the same behavior as the default JavaBuild.
+    /** The JibContainerBuilder before it is used to build the container. An "empty" JibContainerBuilder is passed to
+      * the hook (from the configured SoureImage). In addition the FileEntriesLayer and the entrypoints of a default
+      * JavaBuild are passed to the hook. You have to add both again to the "empty" JibContainerBuilder to get the same
+      * behavior as the default JavaBuild.
       * @return
       *   The return value is used for further processing of the JibContainerBuilder - so full replacement is possible.
       */
     def getJibContainerBuilder: Task[JibContainerBuilder] = Task.Anon {
-      val javaContainerBuilder      = getJavaContainerBuilder()
-      val containerBuilder = javaContainerBuilder.toContainerBuilder()
-      val buildConf        = buildSettings()
-      val logger           = T.ctx().log
+      val javaContainerBuilder = getJavaContainerBuilder()
+      val containerBuilder     = javaContainerBuilder.toContainerBuilder()
+      val buildConf            = buildSettings()
+      val logger               = T.ctx().log
 
       val (jibContainerBuilder, jiblayers, entrypoints) = MDBuild.customizeLayers(containerBuilder, buildConf, logger)
 
