@@ -89,9 +89,6 @@ object MDBuild {
       logger: mill.api.Logger,
   ): (JibContainerBuilder, Vector[FileEntriesLayer], Vector[String]) = {
 
-    val containerBuildPlan = containerBuilder.toContainerBuildPlan()
-    val jiblayers          = containerBuildPlan.getLayers().asScala.toVector
-
     val jibBuilder = buildSettings.sourceImage match {
       case JibImage.RegistryImage(qualifiedName, _) =>
         Jib.from(RegistryImage.named(ImageReference.parse(qualifiedName)))
@@ -101,9 +98,9 @@ object MDBuild {
         Jib.from(TarImage.at(path.path.wrapped))
     }
 
-    // can be null if no entrypoints are present
-    val entrypoints = Option(containerBuildPlan.getEntrypoint()).map(_.asScala.toVector).getOrElse(Vector.empty)
-    entrypoints.foreach(entrypoint => logger.info(s"Entrypoint: $entrypoint"))
+    val containerBuildPlan = containerBuilder.toContainerBuildPlan()
+
+    val jiblayers = containerBuildPlan.getLayers().asScala.toVector
     jiblayers.foreach {
       case fl: FileEntriesLayer =>
         logger.info(s"Layer:  ${fl.getName()}")
@@ -113,8 +110,12 @@ object MDBuild {
       case _: LayerObject =>
         logger.error("LayerObject in customizeLayers not supported")
     }
-
     val fileEntriesLayer = jiblayers.collect { case fl: FileEntriesLayer => fl }
+
+    // can be null if no entrypoints are present
+    val entrypoints = Option(containerBuildPlan.getEntrypoint()).map(_.asScala.toVector).getOrElse(Vector.empty)
+    entrypoints.foreach(entrypoint => logger.info(s"Entrypoint: $entrypoint"))
+
     (jibBuilder, fileEntriesLayer, entrypoints)
   }
 
