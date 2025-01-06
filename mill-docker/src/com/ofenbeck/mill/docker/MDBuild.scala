@@ -93,33 +93,29 @@ object MDBuild {
     val jiblayers          = containerBuildPlan.getLayers().asScala.toVector
 
     val jibBuilder = buildSettings.sourceImage match {
-      case JibImage.RegistryImage(qualifiedName, credentialsEnvironment) =>
+      case JibImage.RegistryImage(qualifiedName, _) =>
         Jib.from(RegistryImage.named(ImageReference.parse(qualifiedName)))
-      case JibImage.DockerDaemonImage(qualifiedName, useFallBack, fallBackEnvCredentials) =>
+      case JibImage.DockerDaemonImage(qualifiedName, _, _) =>
         Jib.from(DockerDaemonImage.named(ImageReference.parse(qualifiedName)))
       case JibImage.SourceTarFile(path) =>
         Jib.from(TarImage.at(path.path.wrapped))
     }
 
-    val entrypoints = containerBuildPlan.getEntrypoint() // can be null if no entrypoints are present
-    val entrypointVector: Vector[String] = if (entrypoints != null && !entrypoints.isEmpty()) {
-      entrypoints.asScala.foreach(entrypoint => logger.info(s"Entrypoint: $entrypoint"))
-      entrypoints.asScala.toVector
-    } else Vector.empty
-    jiblayers.foreach(layer =>
-      layer match {
-        case fl: FileEntriesLayer =>
-          logger.info(s"Layer:  ${fl.getName()}")
-          val filelist: List[FileEntry] = fl.getEntries().asScala.toList
-          filelist.map(entry =>
-            logger.info(s"Layer: ${fl.getName()} Entry: ${entry.getSourceFile()}, ${entry.getExtractionPath()}"),
-          )
-        case _: LayerObject => logger.error("LayerObject in customizeLayers not supported")
-      },
-    )
+    // can be null if no entrypoints are present
+    val entrypoints = Option(containerBuildPlan.getEntrypoint()).map(_.asScala.toVector).getOrElse(Vector.empty)
+    entrypoints.foreach(entrypoint => logger.info(s"Entrypoint: $entrypoint"))
+    jiblayers.foreach {
+      case fl: FileEntriesLayer =>
+        logger.info(s"Layer:  ${fl.getName()}")
+        fl.getEntries().asScala.foreach { entry =>
+          logger.info(s"Layer: ${fl.getName()} Entry: ${entry.getSourceFile()}, ${entry.getExtractionPath()}")
+        }
+      case _: LayerObject =>
+        logger.error("LayerObject in customizeLayers not supported")
+    }
 
     val fileEntriesLayer = jiblayers.collect { case fl: FileEntriesLayer => fl }
-    (jibBuilder, fileEntriesLayer, entrypointVector)
+    (jibBuilder, fileEntriesLayer, entrypoints)
   }
 
   def setMainClass(buildSettings: BuildSettings, javaBuilder: JavaContainerBuilder, logger: mill.api.Logger): Unit =
