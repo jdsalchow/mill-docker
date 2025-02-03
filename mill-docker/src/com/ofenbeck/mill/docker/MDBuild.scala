@@ -31,7 +31,6 @@ object MDBuild {
       buildSettings: BuildSettings,
       logger: mill.api.Logger,
   ): JavaContainerBuilder = {
-    // JibContainerBuilder = {
 
     val javaBuilder = buildSettings.sourceImage match {
       case JibImage.RegistryImage(qualifiedName, credentialsEnvironment) =>
