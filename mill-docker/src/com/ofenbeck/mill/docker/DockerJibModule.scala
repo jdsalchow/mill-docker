@@ -35,7 +35,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
 
     def labels: T[Map[String, String]] = Map.empty[String, String]
 
-    def tags: T[Seq[String]] = Seq.empty[String] 
+    def tags: T[Seq[String]] = Seq.empty[String]
 
     /** JVM runtime options. Each item of the Seq should consist of an option and its desired value, like
       * {{{
@@ -145,31 +145,6 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       )
     }
 
-    /** Hook to modify the JibContainerBuilder before it is used to build the container. An "empty" JibContainerBuilder
-      * is passed to the hook (from the configured SoureImage). In addition the FileEntriesLayer and the entrypoints of
-      * a default JavaBuild are passed to the hook. You have to add both again to the "empty" JibContainerBuilder to get
-      * the same behavior as the default JavaBuild.
-      * @return
-      *   The return value is used for further processing of the JibContainerBuilder - so full replacement is possible.
-      */
-    def jibContainerBuilderHook(
-        sofar: Task[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String])],
-    ): Task[JibContainerBuilder] = Task.Anon {
-      val (emptyJibBuilder, jiblayers, entrypoints) = sofar()
-      jiblayers.map(layer => emptyJibBuilder.addFileEntriesLayer(layer))
-      emptyJibBuilder.setEntrypoint(entrypoints.asJava)
-      emptyJibBuilder
-    }
-
-    /** Hook to modify the JavaContainerBuilder before it is used to build the container.
-      * @return
-      *   The return value is used for further processing of the JavaContainerBuilder - so full replacement is possible.
-      */
-
-    def javaContainerBuilderHook(javaBuilder: Task[JavaContainerBuilder]): Task[JavaContainerBuilder] = Task.Anon {
-      javaBuilder()
-    }
-
     case class BuildResult(
         image: String,
         imageId: String,
@@ -181,36 +156,41 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       implicit def jsonCodec: upickle.default.ReadWriter[BuildResult] = upickle.default.macroRW
     }
 
-    def getJavaBuilder(): Task[JavaContainerBuilder] = Task.Anon {
-      val logger = T.ctx().log
+    /** The JavaContainerBuilder before it is used to build the container.
+      * @return
+      *   The return value is used for further processing of the JavaContainerBuilder - so full replacement is possible.
+      */
+    def getJavaContainerBuilder: Task[JavaContainerBuilder] = Task.Anon {
+      val logger     = T.ctx().log
       val dockerConf = dockerContainerConfig()
       val buildConf  = buildSettings()
 
-      val javaBuilder =
-        MDBuild.javaBuild(
-          buildSettings = buildConf,
-          dockerSettings = dockerConf,
-          logger = logger,
-        )
-      javaBuilder
+      val javaContainerBuilder = MDBuild.javaBuild(
+        buildSettings = buildConf,
+        dockerSettings = dockerConf,
+        logger = logger,
+      )
+      javaContainerBuilder
     }
 
-    def getJibLayers(
-        postHookJavaBuilder: Task[JavaContainerBuilder],
-    ): Task[(JibContainerBuilder, Vector[FileEntriesLayer], Vector[String])] = Task.Anon {
-      val buildConf        = buildSettings()
-      val logger           = T.ctx().log
-      val containerBuilder = postHookJavaBuilder().toContainerBuilder()
-      MDBuild.customizeLayers(containerBuilder, buildConf, logger)
-    }
+    /** The JibContainerBuilder before it is used to build the container. An "empty" JibContainerBuilder is passed to
+      * the hook (from the configured SoureImage). In addition the FileEntriesLayer and the entrypoints of a default
+      * JavaBuild are passed to the hook. You have to add both again to the "empty" JibContainerBuilder to get the same
+      * behavior as the default JavaBuild.
+      * @return
+      *   The return value is used for further processing of the JibContainerBuilder - so full replacement is possible.
+      */
+    def getJibContainerBuilder: Task[JibContainerBuilder] = Task.Anon {
+      val javaContainerBuilder = getJavaContainerBuilder()
+      val jibContainerBuilder  = javaContainerBuilder.toContainerBuilder()
+      val buildConf   = buildSettings()
+      val logger      = T.ctx().log
 
-    //the strange code style is due to the Task macro 
-    def getPostHookJavaContainerBuilder(): Task[JavaContainerBuilder] = Task.Anon {
-      javaContainerBuilderHook(getJavaBuilder())()
-    }
+      val (emptyJibContainerBuilder, jiblayers, entrypoints) = MDBuild.customizeLayers(jibContainerBuilder, buildConf, logger)
 
-    def getPostHookJibContainerBuilder(): Task[JibContainerBuilder] = Task.Anon {
-      jibContainerBuilderHook(getJibLayers(getPostHookJavaContainerBuilder()))()
+      jiblayers.map(emptyJibContainerBuilder.addFileEntriesLayer)
+      emptyJibContainerBuilder.setEntrypoint(entrypoints.asJava)
+      emptyJibContainerBuilder
     }
 
     def buildImage: T[BuildResult] = T {
@@ -219,18 +199,16 @@ trait DockerJibModule extends Module { outer: JavaModule =>
       val dockerConf = dockerContainerConfig()
       val buildConf  = buildSettings()
 
-      val jibContainerBuilderPostHook = getPostHookJibContainerBuilder()()
-      MDBuild.setContainerParams(dockerConf, buildConf, logger, jibContainerBuilderPostHook)
+      val jibContainerBuilder = getJibContainerBuilder()
+      MDBuild.setContainerParams(dockerConf, buildConf, logger, jibContainerBuilder)
 
       val containerizer = buildConf.targetImage match {
         case md.JibImage.DockerDaemonImage(qualifiedName, _, _) =>
           Containerizer.to(DockerDaemonImage.named(qualifiedName))
         case md.JibImage.RegistryImage(qualifiedName, credentialsEnvironment) =>
           val image = RegistryImage.named(jib.api.ImageReference.parse(qualifiedName))
-          credentialsEnvironment match {
-            case Some((username, password)) =>
-              image.addCredentialRetriever(MDShared.retrieveEnvCredentials(username, password))
-            case None =>
+          credentialsEnvironment.foreach { case (username, password) =>
+            image.addCredentialRetriever(MDShared.retrieveEnvCredentials(username, password))
           }
           Containerizer.to(image)
         case md.JibImage.TargetTarFile(qualifiedName, filename) =>
@@ -247,7 +225,7 @@ trait DockerJibModule extends Module { outer: JavaModule =>
         .setToolName(MDShared.toolName)
       // TODO: check how we could combine jib and mill caching
 
-      val container = jibContainerBuilderPostHook.containerize(containerizerWithToolSet)
+      val container = jibContainerBuilder.containerize(containerizerWithToolSet)
 
       BuildResult(
         image = container.getTargetImage.toString(),

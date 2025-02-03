@@ -41,10 +41,10 @@ object project extends ScalaModule with DockerJibModule {
       PathRef(taskDownloadDir)
     }
 
-    override def javaContainerBuilderHook(builderTask: Task[JavaContainerBuilder]): Task[JavaContainerBuilder] = Task.Anon {
+    override def getJavaContainerBuilder: Task[JavaContainerBuilder] = Task.Anon {
         T.ctx().log.info("Added Azure agent to the container")
-        val builder = builderTask()
-        builder.addResources(downloadAzureAgent().path.wrapped) 
+        val builder = super.getJavaContainerBuilder()
+        builder.addResources(downloadAzureAgent().path.wrapped)
         builder
     }
 
