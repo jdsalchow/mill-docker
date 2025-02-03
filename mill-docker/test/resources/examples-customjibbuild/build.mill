@@ -77,4 +77,4 @@ object project extends ScalaModule with DockerJibModule {
   
 
   }
-q}
+}
